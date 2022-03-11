@@ -50,7 +50,7 @@ export class FatFS {
         this.root.addFile(filename, extension, FileAttribute.ARCHIVE, enc.encode(content));
     }
 
-    generate_hex(){
+    generate_binary(){
         return          this.BPB.generateBPB()
                 .concat(this.table.generateTable())
                 .concat(this.root.generateRootDirectory());
