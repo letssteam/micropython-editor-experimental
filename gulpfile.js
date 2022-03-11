@@ -37,5 +37,9 @@ gulp.task("default",
     )
 );
 
-gulp.watch( "src/**", gulp.series("ts-compilation") )
-gulp.watch( "static/**", gulp.series("copy-static") )
+if( process.argv.indexOf("--watch") != -1 ){
+    console.log("\n\tWatching enabled\n");
+
+    gulp.watch( "src/**", gulp.series("ts-compilation") );
+    gulp.watch( "static/**", gulp.series("copy-static") );
+}
