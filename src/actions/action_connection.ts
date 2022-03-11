@@ -1,5 +1,5 @@
-import { Button } from "./button";
-import { DapLinkWrapper } from "./daplink";
+import { Button } from "../button";
+import { DapLinkWrapper } from "../daplink";
 
 export class ActionConnection {
 
