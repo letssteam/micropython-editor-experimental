@@ -128,7 +128,7 @@ export class FatRootDirectory{
             this.sectors[ cluster - 2 ].set( content.slice( i * this.sector_size, i * this.sector_size + this.sector_size ) );
 
 
-            next_cluster = this.fat_table.find_free_cluster();
+            next_cluster = this.fat_table.find_free_cluster(cluster);
             this.fat_table.set_next_cluster(cluster, next_cluster);
         }
 

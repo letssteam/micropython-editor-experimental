@@ -31,9 +31,9 @@ export class FatTable {
         this.table[cluster] = (next >= this.table.length && next != FatTable.END_OF_FILE) ? FatTable.BAD_CLUSTER : (next & 0xFFF);
     }
 
-    find_free_cluster(): number{
+    find_free_cluster(except: number = -1): number{
         for( let i = 2; i < this.table.length ; ++i){
-            if( this.table[i] == 0x000 ){
+            if( this.table[i] == 0x000 && i != except){
                 return i;
             }
         }
