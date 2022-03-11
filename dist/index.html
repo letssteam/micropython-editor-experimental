@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>MicroPython Experiments</title>
+
+        <link rel="icon" href="img/favicon/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicon/favicon-16x16.png">
+
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+		<link rel="stylesheet" data-name="vs/editor/editor.main" href="js/monaco/min/vs/editor/editor.main.css" />
+		<link rel="stylesheet" href="css/base.css" />
+		<link rel="stylesheet" href="css/color.css" />
+
+
+        <script src="js/app.js"></script>
+
+        <!-- Monaco import JS files -->
+		<script>
+			var require = { paths: { vs: 'js/monaco/min/vs' } };
+		</script>
+		<script src="js/monaco/min/vs/loader.js"></script>
+		<script src="js/monaco/min/vs/editor/editor.main.nls.js"></script>
+		<script src="js/monaco/min/vs/editor/editor.main.js"></script>
+    </head>
+
+    <body>
+        <div id="main_container">
+            <div id="top_container">
+            </div>
+            <div id="left_container">
+                <div id="code_editor"></div>
+            </div>
+            <div id="spacer_container"><div unselectable="on" class="unselectable">&#11837;</div></div>
+            <div id="right_container">
+            </div>
+        </div>
+
+
+		<script>
+			var editor = monaco.editor.create(document.getElementById('code_editor'), {
+				value: ['# Write your python code, here !\n\n# define the hello function\ndef hello():\n\tprint(\'Hello World\')\n\n# Call the hello function\nhello()\n'].join('\n'),
+				language: 'python',
+	            theme: 'vs-dark',
+		        lineNumbers: 'on',
+                automaticLayout: true
+			});
+
+            new Application(editor);
+		</script>
+
+    </body>
+
+</html>
