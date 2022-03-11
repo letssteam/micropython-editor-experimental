@@ -1,12 +1,12 @@
 import { Button, ButtonSpacer } from "./button";
-import { ActionConnection } from "./action_connection";
+import { ActionConnection } from "./actions/action_connection";
 import { DapLinkWrapper } from "./daplink";
 import { ActionRun } from "./actions/action_run";
 import { SerialOutput } from "./serialOutput";
 import { TwoPanelContainer } from "./TwoPanelContainer";
 import { ActionSave } from "./actions/action_save";
 import { ActionLoad } from "./actions/action_load";
-import { FatFS } from "./microFAT/fat";
+import { ActionFlash } from "./actions/action_flash";
 
 export class Application{
 
@@ -29,10 +29,11 @@ export class Application{
 
 
         new TwoPanelContainer(this.left_container, this.spacer_container, this.right_container).set_panel_size(document.body.clientWidth * 0.66);
-        let fat = new FatFS("PYBFLASH");
+        // let fat = new FatFS("PYBFLASH");
 
-        fat.addFile("TEST", "TXT", "JE SUIS TROP FORT, PUTAIN  !!!");
-        fat.generate_hex();
+        // fat.addFile("boot", "py", fs.readFileSync("files/boot.py").toString());
+        // fat.addFile("pybcdc", "inf", fs.readFileSync("files/pybcdc.inf").toString());
+        // fat.addFile("README", "txt", fs.readFileSync("files/README.txt").toString());
     }
 
 
@@ -47,7 +48,7 @@ export class Application{
         new ActionRun(this.dapLinkWrapper, menu_run, () => monaco_editor.getValue() );
 
         //Flash
-        let menu_flash = new Button(this.top_container, "img/flash.png");
+        new ActionFlash(new Button(this.top_container, "img/flash.png"), () => monaco_editor.getValue());
 
 
         new ButtonSpacer(this.top_container);
