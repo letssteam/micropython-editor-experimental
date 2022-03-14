@@ -7,6 +7,9 @@ body{
 
     background-color: #39474e;
     color: #BBB;
+
+    font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif
+
 }
 
 /***************************************************************************************/
@@ -141,4 +144,82 @@ body{
 
 
 
+/***************************************************************************************/
+/***                               PROGRESS DIALOG                                   ***/
+/***************************************************************************************/
 
+.progress-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 100vw;
+    height: 100vh;
+
+    background-color: #000000E0;
+    color: black;
+}
+
+.progress-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 33%;
+    transform: translate(-50%, -50%);
+
+    padding: 0;
+
+    border-radius: 5px;
+    background-color: white;
+    overflow-x: hidden;
+}
+
+.progress-content-title {
+    color: white;
+    background-color: #e9407f;
+
+    margin-top: 0;
+    padding: 4px 8px;
+    font-size: 1.5em;
+}
+
+.progress-content {
+    padding: 8px;
+}
+
+.progress-bar-container {
+    background-color: #cfcfcf;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1em;
+}
+
+.progress-bar-value {
+    float: left;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    margin: 0;
+}
+
+.progress-bar-cursor  {
+    background-color: #3bbdd6;
+    width: 0%;
+    height: 100%;
+}
+
+.progress-bar-close-button {
+    border-radius: 10px;
+    padding: 8px 32px;
+    border: none;
+    background: #e9407f;
+    color: white;
+    font-weight: bold;
+    margin-top: 8px;
+    cursor: pointer;
+    line-height: 1.5;
+    font-size: 100%;
+    margin-left: 100%;
+    transform: translateX(-100%);
+}
