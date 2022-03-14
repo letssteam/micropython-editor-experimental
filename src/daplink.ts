@@ -1,4 +1,5 @@
 import * as DAPjs from "dapjs";
+import { wait } from "./common";
 
 export class DapLinkWrapper {
 
@@ -37,6 +38,8 @@ export class DapLinkWrapper {
 
         this.target = undefined;
         this.transport = undefined;
+
+        this.flushSerial();
     }
 
     async runScript(script: string, disable_echo: boolean = true){
@@ -51,23 +54,32 @@ export class DapLinkWrapper {
     async flashMain(script: string){
 
         let bin_data = new TextEncoder().encode(script);
+        let prog = "prog=[";
+        
+        let part_length = 40;
+        let nb_part = Math.ceil(bin_data.length / part_length);
+        
+        for( let i = 0; i < nb_part; ++i ){
+            prog += bin_data.slice(i * part_length, (i+1) * part_length).join(",");
+            prog += ",\n"
+        }
 
-        let main =  `with open("plop.py", "bw") as f:\n` +
-                    `\tf.write(bytearray([${bin_data}]))\n` + 
+        prog += "]\n";
+
+        let main =  prog +
+                    `with open("main.py", "wb") as f:\n` +
+                    `\tf.write(bytearray(prog))\n` + 
                     "\n"
                     "\n"
                     "\n";
                     
-        this.sendScript(main, false);
-    }
 
-    async stopRunningScript(){
-        if( this.target == undefined ){ return; }
+        console.log(main);
 
-        for( let i = 0; i < 2; ++i){
-            await this.target.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
-        }
-        
+        await this.sendScript(main, false);
+        await this.target?.reset();
+
+        console.log("done");
     }
 
     isConnected() : boolean{
@@ -77,9 +89,9 @@ export class DapLinkWrapper {
     flash(data: Uint8Array) : void{
         if( !this.isConnected() ){ return; }
 
-        this.target.startSerialRead();
-        this.target.flash(data);
-        this.target.reset();
+        this.target?.startSerialRead();
+        this.target?.flash(data);
+        this.target?.reset();
     }
 
     private async sendScript(script: string, disable_echo: boolean){
@@ -91,9 +103,10 @@ export class DapLinkWrapper {
 
         let chunks = final_script.match(new RegExp('[\\s\\S]{1,' + DapLinkWrapper.LENGTH_SERIAL_BUFFER + '}', 'g')) || [];
 
-        await this.stopRunningScript();
+        await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
+        await wait(2000);
 
-        await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] Enable paste mode (REPL Python)
+        await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
 
         for( let chunk of chunks ){
             await this.target?.serialWrite(chunk);
@@ -102,7 +115,7 @@ export class DapLinkWrapper {
 
         await this.target?.serialWrite("__send_script_execution__()\n\n");
 
-        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Disable paste mode (REPL Python)
+        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Start REPL on paste code (REPL Python)
 
     }
 
@@ -131,6 +144,12 @@ export class DapLinkWrapper {
         return true;
     }
 
+    private flushSerial(){
+        if( this.serial_buffer.length > 0 ){
+            this.onEventSerialData("\n");
+        }
+    }
+
     private onEventSerialData(data: string){
         let splits = data.split(/(?<=\n)/); // Split but keep the '\n'
 
@@ -138,7 +157,6 @@ export class DapLinkWrapper {
             this.serial_buffer += split;
 
             if( split.at(-1) == '\n' ){
-                console.log(new TextEncoder().encode(this.serial_buffer));
                 this.callOnReceiveCallbacks( this.serial_buffer.replace(/\x04\x04/g, "").replace(/\>OK/g, "") );
                 this.serial_buffer = "";
             }
