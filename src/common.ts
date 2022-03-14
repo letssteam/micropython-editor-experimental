@@ -1,4 +1,5 @@
 export type GetDataCallback = () => string;
+export type OnProgressCallback = (progress: number) => void;
 
 
 export function print_hex_data( values : number[] ){
