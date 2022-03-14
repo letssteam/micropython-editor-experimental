@@ -25,3 +25,10 @@ export function print_hex_data( values : number[] ){
 
     console.log(str);
 }
+
+export async function wait(ms: number): Promise<void>{
+
+    return new Promise( (resolve) => {
+        setTimeout( () => resolve(), ms);
+    });
+}
