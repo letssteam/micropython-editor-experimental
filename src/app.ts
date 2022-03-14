@@ -1,4 +1,4 @@
-import { Button, ButtonSpacer } from "./button";
+import { Button } from "./button/button";
 import { ActionConnection } from "./actions/action_connection";
 import { DapLinkWrapper } from "./daplink";
 import { ActionRun } from "./actions/action_run";
@@ -7,6 +7,9 @@ import { TwoPanelContainer } from "./TwoPanelContainer";
 import { ActionSave } from "./actions/action_save";
 import { ActionLoad } from "./actions/action_load";
 import { ActionFlash } from "./actions/action_flash";
+import { ToggleButton } from "./button/button_toggle";
+import { ActionSettings } from "./actions/action_settings";
+import { ButtonSpacer } from "./button/buttonSpacer";
 
 export class Application{
 
@@ -17,6 +20,8 @@ export class Application{
 
 
 
+    //@ts-ignore
+    private button_run : Button;
     private dapLinkWrapper : DapLinkWrapper;
 
 
@@ -27,50 +32,49 @@ export class Application{
         this.topMenu(monaco_editor);
         this.rightPanel();
 
+        //@ts-ignore
+        this.button_run.disable();
 
         new TwoPanelContainer(this.left_container, this.spacer_container, this.right_container).set_panel_size(document.body.clientWidth * 0.66);
-        // let fat = new FatFS("PYBFLASH");
-
-        // fat.addFile("boot", "py", fs.readFileSync("files/boot.py").toString());
-        // fat.addFile("pybcdc", "inf", fs.readFileSync("files/pybcdc.inf").toString());
-        // fat.addFile("README", "txt", fs.readFileSync("files/README.txt").toString());
     }
 
 
     private topMenu(monaco_editor: any){
 
-        // Connection
-        new ActionConnection(this.dapLinkWrapper, new Button(this.top_container, "img/disconnect.png"), "img/connect.png", "img/disconnect.png", (is_connected) => { is_connected ? menu_run.enable() : menu_run.disable(); });
-        
-        // Run
-        let menu_run = new Button(this.top_container, "img/play.png");
-        menu_run.disable();
-        new ActionRun(this.dapLinkWrapper, menu_run, () => monaco_editor.getValue() );
+        let act_connection =  new ActionConnection(this.dapLinkWrapper, (is_connected) => this.onConnectionChange(is_connected));
+        let act_run = new ActionRun(this.dapLinkWrapper, () => monaco_editor.getValue());
+        let act_flash = new ActionFlash(this.dapLinkWrapper, () => monaco_editor.getValue());
+        let act_load = new ActionLoad((data) => monaco_editor.setValue(data));
+        let act_save = new ActionSave(() => monaco_editor.getValue());
+        let act_settings = new ActionSettings();
 
-        //Flash
-        new ActionFlash(new Button(this.top_container, "img/flash.png"), () => monaco_editor.getValue());
 
+        new ToggleButton(this.top_container, "img/disconnect.png", "img/connect.png", act_connection, "Click to connect", "Click to disconnect");
+        this.button_run = new Button(this.top_container, "img/play.png", act_run, "Run script on target");
+        new Button(this.top_container, "img/flash.png", act_flash, "Flash or Download");
+
+        new ButtonSpacer(this.top_container);
+
+        new Button(this.top_container, "img/upload.png", act_load, "Load python file");
+        new Button(this.top_container, "img/download.png", act_save, "Save python file");
 
         new ButtonSpacer(this.top_container);
 
-
-        // Load
-        new ActionLoad(new Button(this.top_container, "img/upload.png"), (data) => monaco_editor.setValue(data));
-
-        // Save
-        new ActionSave(new Button(this.top_container, "img/download.png"), () => monaco_editor.getValue() );
-
-
-        new ButtonSpacer(this.top_container);
-        
-        
-        // Settings
-        let menu_settings = new Button(this.top_container, "img/settings.png");
+        new Button(this.top_container, "img/settings.png", act_settings, "Settings");
     }
 
     private rightPanel(){
         let serialOutput = new SerialOutput(this.right_container);
-        this.dapLinkWrapper.onReceivedData( (data) => serialOutput.write(data));
+        this.dapLinkWrapper.addReiceivedDataListener( (data) => serialOutput.write(data));
+    }
+
+    private onConnectionChange(is_connected: boolean){
+        if(is_connected){
+            this.button_run.enable();
+        }
+        else{
+            this.button_run.disable();
+        }
     }
 }
 
