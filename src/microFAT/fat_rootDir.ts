@@ -76,6 +76,7 @@ export class FatRootDirectory{
     private files: (null | FatRootDirectory_File)[];
     private sectors: Sector[]
     private fat_table: FatTable;
+    private biggest_cluster_use: number;
 
     constructor(bpb: FatBPB, fat_table: FatTable, volume_name: string){
         this.sector_size = bpb.sector_size;
@@ -98,6 +99,7 @@ export class FatRootDirectory{
         file.attribute = FileAttribute.VOLUME_NAME;
 
         this.files[0] = file;
+        this.biggest_cluster_use = 0;
     }
 
     addFile(filename: string, extension: string, attribute: FileAttribute, content: Uint8Array){
@@ -125,6 +127,8 @@ export class FatRootDirectory{
 
             cluster = next_cluster;
 
+            if( cluster > this.biggest_cluster_use ) this.biggest_cluster_use = cluster;
+
             this.sectors[ cluster - 2 ].set( content.slice( i * this.sector_size, i * this.sector_size + this.sector_size ) );
 
 
@@ -151,9 +155,10 @@ export class FatRootDirectory{
             }
         });
 
-        this.sectors.forEach( (sector) => {
-            result = result.concat( Array.from(sector.data) );
-        })
+        for(let i = 0; i < this.sectors.length && i < this.biggest_cluster_use; ++i ){
+
+            result = result.concat( Array.from(this.sectors[i].data) );
+        }
 
         return result;
     }
