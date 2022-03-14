@@ -23,14 +23,19 @@ export class Application{
     //@ts-ignore
     private button_run : Button;
     private dapLinkWrapper : DapLinkWrapper;
+    private serial_output : SerialOutput;
 
 
 
     constructor(monaco_editor: any){
         this.dapLinkWrapper = new DapLinkWrapper();
 
+        this.serial_output = new SerialOutput(this.right_container);
+        this.dapLinkWrapper.addReiceivedDataListener( (data) => this.serial_output.write(data));
+
+
         this.topMenu(monaco_editor);
-        this.rightPanel();
+
 
         //@ts-ignore
         this.button_run.disable();
@@ -43,7 +48,7 @@ export class Application{
 
         let act_connection =  new ActionConnection(this.dapLinkWrapper, (is_connected) => this.onConnectionChange(is_connected));
         let act_run = new ActionRun(this.dapLinkWrapper, () => monaco_editor.getValue());
-        let act_flash = new ActionFlash(this.dapLinkWrapper, () => monaco_editor.getValue());
+        let act_flash = new ActionFlash(this.dapLinkWrapper, this.serial_output, () => monaco_editor.getValue());
         let act_load = new ActionLoad((data) => monaco_editor.setValue(data));
         let act_save = new ActionSave(() => monaco_editor.getValue());
         let act_settings = new ActionSettings();
@@ -61,11 +66,6 @@ export class Application{
         new ButtonSpacer(this.top_container);
 
         new Button(this.top_container, "img/settings.png", act_settings, "Settings");
-    }
-
-    private rightPanel(){
-        let serialOutput = new SerialOutput(this.right_container);
-        this.dapLinkWrapper.addReiceivedDataListener( (data) => serialOutput.write(data));
     }
 
     private onConnectionChange(is_connected: boolean){

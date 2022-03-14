@@ -4,29 +4,32 @@ import { FatFS } from "../microFAT/fat";
 import { saveAs } from "file-saver";
 import { DapLinkWrapper } from "../daplink";
 import { Action } from "./action";
+import { SerialOutput } from "../serialOutput";
 
 export class ActionFlash implements Action {
 
     private getData_cb: GetDataCallback;
     private daplink: DapLinkWrapper;
+    private serial_ouput: SerialOutput;
 
-    constructor(daplink: DapLinkWrapper, getData: GetDataCallback){
+    private dialog: HTMLElement;
+
+    constructor(daplink: DapLinkWrapper, serial_output: SerialOutput, getData: GetDataCallback){
         this.getData_cb = getData;
         this.daplink = daplink;
+        this.serial_ouput = serial_output;
     }
 
     async run() : Promise<boolean>{
 
         if( this.daplink.isConnected() )
         {
-            if( await this.isMicropythonFound() ){
-                // Write the main file
-                // let script = this.generateScript( this.getData_cb() );
-                // this.daplink.runScript(script);
-                this.daplink.flashMain(this.getData_cb());
+            if( await this.daplink.isMicropythonOnTarget() ){
+                await this.daplink.flashMain(this.getData_cb(), (prg: number) => console.log(`Progress: ${prg * 100}%`));
+                this.serial_ouput.clear();
             }
             else{
-                this.daplink.flash(await this.generateBinary());
+                await this.daplink.flash(await this.generateBinary());
             }
         }
         else{
@@ -62,12 +65,5 @@ export class ActionFlash implements Action {
     private async readFileAsBlob(file: string) : Promise<ArrayBuffer> {
         let rep = await fetch(file);
         return await rep.arrayBuffer();
-    }
-
-    private async isMicropythonFound(): Promise<boolean> {
-
-        console.error("Not implemented")
-
-        return true;
     }
 }

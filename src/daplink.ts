@@ -1,5 +1,5 @@
 import * as DAPjs from "dapjs";
-import { wait } from "./common";
+import { OnProgressCallback, wait } from "./common";
 
 export class DapLinkWrapper {
 
@@ -42,22 +42,24 @@ export class DapLinkWrapper {
         this.flushSerial();
     }
 
-    async runScript(script: string, disable_echo: boolean = true){
+    async runScript(script: string){
         
         if( !await this.connect() ){
             return;
         }
 
-        await this.sendScript(script + "\n\n\n", disable_echo);
+        await this.sendScript(script + "\n\n\n");
     }
 
-    async flashMain(script: string){
+    async flashMain(script: string, on_progress : OnProgressCallback){
 
         let bin_data = new TextEncoder().encode(script);
         let prog = "prog=[";
         
         let part_length = 40;
         let nb_part = Math.ceil(bin_data.length / part_length);
+
+        on_progress(0);
         
         for( let i = 0; i < nb_part; ++i ){
             prog += bin_data.slice(i * part_length, (i+1) * part_length).join(",");
@@ -72,29 +74,40 @@ export class DapLinkWrapper {
                     "\n"
                     "\n"
                     "\n";
-                    
 
-        console.log(main);
+        await this.sendScript(main, on_progress);
+        await this.target?.serialWrite(String.fromCharCode(2)); // [Ctrl+B] exit raw mode (REPL Python)
+        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Soft reset (REPL Python)
 
-        await this.sendScript(main, false);
-        await this.target?.reset();
-
-        console.log("done");
+        on_progress(1);
     }
 
     isConnected() : boolean{
         return this.target != undefined && this.target.connected;
     }
 
-    flash(data: Uint8Array) : void{
+    async flash(data: Uint8Array) : Promise<void>{
         if( !this.isConnected() ){ return; }
 
-        this.target?.startSerialRead();
-        this.target?.flash(data);
-        this.target?.reset();
+        await this.target?.flash(data);
+        await this.target?.reset();
     }
 
-    private async sendScript(script: string, disable_echo: boolean){
+    async isMicropythonOnTarget(){
+        if( !this.isConnected() ){ return; }
+
+        await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
+        await wait(2000);
+        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D]
+
+        let read : string =  new TextDecoder().decode( await this.target?.serialRead() );
+        await wait(2000);
+        
+        return (read.indexOf("MPY") != -1);
+    }
+
+
+    private async sendScript(script: string, on_progress?: OnProgressCallback ){
 
         if( !this.isConnected() ){ return; }
         if( script.length == 0 ){ return; }
@@ -108,9 +121,14 @@ export class DapLinkWrapper {
 
         await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
 
-        for( let chunk of chunks ){
-            await this.target?.serialWrite(chunk);
+        for(let i = 0; i < chunks.length; ++i ){
+            await this.target?.serialWrite(chunks[i]);
             await this.target?.serialRead();
+
+            if(on_progress != undefined){
+                on_progress( i / chunks.length );
+            }
+
         }
 
         await this.target?.serialWrite("__send_script_execution__()\n\n");
