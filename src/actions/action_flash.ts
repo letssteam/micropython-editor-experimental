@@ -70,27 +70,4 @@ export class ActionFlash implements Action {
 
         return true;
     }
-
-    private generateScript(main_script: string, max_line_length: number = 32) : string{
-
-        let bin_data = new TextEncoder().encode(main_script);
-        let variable = `prog=[${bin_data.join(",")}]`;
-        let nb_part = Math.ceil(variable.length / max_line_length);
-        let main = "";
-
-        for( let i = 0; i < nb_part; ++i ){
-            main += variable.substring( i * max_line_length - 1, i * max_line_length - 1 + max_line_length );
-            main += "\n"
-        }
-
-        main += `with open("plop.py", "wb") as f:\n` +
-                "\tf.write(bytearray(prog))" + 
-                "\n"
-                "\n"
-                "\n";
-        
-
-        console.log(main)
-        return main;
-    }
 }
