@@ -1,14 +1,13 @@
-import { Button } from "../button";
 import { saveAs } from "file-saver";
+import { GetDataCallback } from "../common";
+import { Action } from "./action";
 
-export class ActionSave{
+export class ActionSave implements Action{
 
-    private cb_getScript;
+    private cb_getScript : GetDataCallback;
 
-    constructor(button: Button, getScript: CallableFunction){
+    constructor(getScript: GetDataCallback){
         this.cb_getScript = getScript;
-
-        button.button.addEventListener("click", () => this.saveFile("main.py"));
     }
 
     saveFile(filename: string){
@@ -16,4 +15,8 @@ export class ActionSave{
         saveAs(blob, filename);
     }
 
+    async run(): Promise<boolean> {
+        this.saveFile("main.py");
+        return true;
+    }
 }

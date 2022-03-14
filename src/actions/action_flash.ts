@@ -1,39 +1,96 @@
-import { Button } from "../button";
 import { GetDataCallback } from "../common";
 import { FatFS } from "../microFAT/fat";
 
 import { saveAs } from "file-saver";
+import { DapLinkWrapper } from "../daplink";
+import { Action } from "./action";
 
-export class ActionFlash{
+export class ActionFlash implements Action {
 
     private getData_cb: GetDataCallback;
+    private daplink: DapLinkWrapper;
 
-    constructor(button: Button, getData: GetDataCallback){
+    constructor(daplink: DapLinkWrapper, getData: GetDataCallback){
         this.getData_cb = getData;
-
-        button.button.addEventListener("click", () => this.downloadBinary() );
+        this.daplink = daplink;
     }
 
-    private async downloadBinary(){
+    async run() : Promise<boolean>{
 
+        if( this.daplink.isConnected() )
+        {
+            if( await this.isMicropythonFound() ){
+                // Write the main file
+                // let script = this.generateScript( this.getData_cb() );
+                // this.daplink.runScript(script);
+                this.daplink.flashMain(this.getData_cb());
+            }
+            else{
+                this.daplink.flash(await this.generateBinary());
+            }
+        }
+        else{
+            saveAs( new Blob( [await this.generateBinary()] ), "flash.bin" );
+        }
+
+        return true;
+    }
+
+    private async generateBinary() : Promise<Uint8Array>{
         let fat = new FatFS("PYBFLASH");
 
-        fat.addFile("README", "txt", await this.readFile("files/README.txt"));
-        fat.addFile("boot", "py", await this.readFile("files/boot.py"));
-        fat.addFile("pybcdc", "inf", await this.readFile("files/pybcdc.inf"));
-        fat.addFile("main", "py", this.getData_cb());
+        fat.addFile("README", "TXT", await this.readFileAsText("files/README.txt"));
+        fat.addFile("BOOT", "PY", await this.readFileAsText("files/boot.py"));
+        fat.addFile("PYBCDC", "INF", await this.readFileAsText("files/pybcdc.inf"));
+        fat.addFile("MAIN", "PY", this.getData_cb());
 
-        saveAs( new Blob( [Uint8Array.from(fat.generate_binary())] ), "flash.bin" );
+        let base = await this.readFileAsBlob("files/micropython_L475_v1.18_PADDED.bin");
+        let fat_part = fat.generate_binary();
+
+        let bin_file = new Uint8Array( base.byteLength + fat_part.length);
+        bin_file.set(new Uint8Array(base), 0);
+        bin_file.set(new Uint8Array(fat_part), base.byteLength);
+
+        return bin_file;
     }
 
-    private async readFile(file: string) : Promise<string> {
+    private async readFileAsText(file: string) : Promise<string> {
         let rep = await fetch(file);
-
-        let res = await rep.text();
-
-        console.log(`${file}:\n${res}`);
-
-        return res;
+        return await rep.text();
     }
 
+    private async readFileAsBlob(file: string) : Promise<ArrayBuffer> {
+        let rep = await fetch(file);
+        return await rep.arrayBuffer();
+    }
+
+    private async isMicropythonFound(): Promise<boolean> {
+
+        console.error("Not implemented")
+
+        return true;
+    }
+
+    private generateScript(main_script: string, max_line_length: number = 32) : string{
+
+        let bin_data = new TextEncoder().encode(main_script);
+        let variable = `prog=[${bin_data.join(",")}]`;
+        let nb_part = Math.ceil(variable.length / max_line_length);
+        let main = "";
+
+        for( let i = 0; i < nb_part; ++i ){
+            main += variable.substring( i * max_line_length - 1, i * max_line_length - 1 + max_line_length );
+            main += "\n"
+        }
+
+        main += `with open("plop.py", "wb") as f:\n` +
+                "\tf.write(bytearray(prog))" + 
+                "\n"
+                "\n"
+                "\n";
+        
+
+        console.log(main)
+        return main;
+    }
 }

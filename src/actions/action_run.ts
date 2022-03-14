@@ -1,11 +1,19 @@
-import { Button } from "../button";
 import { GetDataCallback } from "../common";
 import { DapLinkWrapper } from "../daplink";
+import { Action } from "./action";
 
-export class ActionRun{
+export class ActionRun implements Action{
 
-    constructor(daplink : DapLinkWrapper, button: Button, getScript: GetDataCallback){
-        button.button.addEventListener("click", () => button.isEnable() ? daplink.runScript(getScript()) : null);
+    private daplink: DapLinkWrapper;
+    private getScript_cb: GetDataCallback;
+
+    constructor(daplink : DapLinkWrapper, getScript: GetDataCallback){
+        this.daplink = daplink;
+        this.getScript_cb = getScript;
     }
 
+    async run(): Promise<boolean> {
+        this.daplink.runScript(this.getScript_cb());
+        return true;
+    }
 }

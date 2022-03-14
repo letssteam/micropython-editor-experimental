@@ -1,11 +1,11 @@
-import { Button } from "../button";
+import { Action } from "./action";
 
-export class ActionLoad{
+export class ActionLoad implements Action {
 
     private fileReader : FileReader;
     private file_input : HTMLInputElement;
 
-    constructor( button: Button, onFileReaded: (data: string) => void){
+    constructor( onFileReaded: (data: string) => void){
 
         this.fileReader = new FileReader();
 
@@ -21,7 +21,6 @@ export class ActionLoad{
 
         d.append(this.file_input);
 
-        button.button.addEventListener("click", () => this.file_input.click());
         this.file_input.addEventListener("input", () => this.openFile());
 
         this.fileReader.onload = () => onFileReaded(this.fileReader.result as string);
@@ -32,4 +31,8 @@ export class ActionLoad{
         this.fileReader.readAsText((this.file_input.files as FileList)[0], "UTF-8");
     }
 
+    async run(): Promise<boolean> {
+        this.file_input.click();
+        return true;
+    }
 }
