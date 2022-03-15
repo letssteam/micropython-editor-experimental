@@ -18,19 +18,23 @@ export class ToggleButton extends Button{
         this.titleB = titleB;
     }
 
+    setButtonState(default_state: boolean){
+        if( default_state ){
+            this.button.title = this.titleA;
+            this.icon.src = this.iconA;
+        }
+        else{
+            this.button.title = this.titleB;
+            this.icon.src = this.iconB;
+        }
+    }
+
     protected async onButtonClick(){
         if( ! this.is_enable ){ return; }
         if( ! await this.action.run() ){ return; }
 
-        if( this.is_A_show ){
-            this.button.title = this.titleB;
-            this.icon.src = this.iconB;
-        }
-        else{
-            this.button.title = this.titleA;
-            this.icon.src = this.iconA;
-        }
-
         this.is_A_show = !this.is_A_show;
+        
+        this.setButtonState(this.is_A_show);
     }
 }
