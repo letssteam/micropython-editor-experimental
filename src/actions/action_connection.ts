@@ -1,39 +1,25 @@
+import { OnConnectionChangeCallback } from "../common";
 import { DapLinkWrapper } from "../daplink";
 import { Action } from "./action";
 
 export class ActionConnection implements Action {
 
     private daplink: DapLinkWrapper;
-    private cb_onConnectionChagne: (isConnected: boolean) => void;
     private is_connected: boolean;
 
-    constructor(daplink: DapLinkWrapper, on_connection_change : (isConnected: boolean) => void){
+    constructor(daplink: DapLinkWrapper){
         this.daplink = daplink;
-        this.cb_onConnectionChagne = on_connection_change;
 
         this.is_connected = false;
+        daplink.addConnectionChangeListener( (is_conn) => this.onConnectionChange(is_conn) );
     }
 
     async connect() : Promise<boolean>{
-
-        if( !await this.daplink.connect() ){
-            return false;
-        }
-        this.is_connected = true;
-
-        if( this.cb_onConnectionChagne ) this.cb_onConnectionChagne(true);
-
-        return true;
+        return await this.daplink.connect();
     }
 
     async disconnect() : Promise<boolean>{
-
-        await this.daplink.disconnect();
-        this.is_connected = false;
-
-        if( this.cb_onConnectionChagne ) this.cb_onConnectionChagne(false);
-
-        return true;
+        return await this.daplink.disconnect();
     }
 
     async run(): Promise<boolean> {
@@ -43,5 +29,9 @@ export class ActionConnection implements Action {
         else{
             return this.connect();
         }
+    }
+
+    private onConnectionChange(is_connected: boolean){
+        this.is_connected = is_connected;
     }
 }
