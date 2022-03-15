@@ -1,5 +1,6 @@
 export type GetDataCallback = () => string;
 export type OnProgressCallback = (progress: number) => void;
+export type OnConnectionChangeCallback = (is_connected: boolean) => void;
 
 
 export function print_hex_data( values : number[] ){

@@ -1,23 +1,35 @@
 import * as DAPjs from "dapjs";
-import { OnProgressCallback, wait } from "./common";
+import { OnConnectionChangeCallback, OnProgressCallback, wait } from "./common";
 
 export class DapLinkWrapper {
 
     static readonly LENGTH_SERIAL_BUFFER : number = 30;
 
+    private device?: USBDevice = undefined;
     private transport? : DAPjs.WebUSB = undefined;
     private target? : DAPjs.DAPLink = undefined;
 
     private cb_onReceiveData : Array<(data: string) => void> = [];
     private serial_buffer : string = "";
+    private onConnectionChange_cb: OnConnectionChangeCallback[] = [];
 
-    constructor(){}
+    constructor(){
+        navigator.usb.addEventListener('disconnect', event => {
+            console.log(event);
+
+            if( this.isConnected() ){
+                if(this.device?.serialNumber == event.device.serialNumber){
+                    this.disconnect();
+                }
+            }
+        });
+    }
 
     addReiceivedDataListener ( cb : (data: string) => void ){
         this.cb_onReceiveData.push(cb);
     }
 
-    async connect(){
+    async connect() : Promise<boolean>{
         if( ! this.isConnected() ){
             if(! await this.createTarget() ){
                 return false;
@@ -25,21 +37,29 @@ export class DapLinkWrapper {
         }
 
         this.target?.startSerialRead();
+        this.callOnConnectionChangeCallbacks(true);
         return true;
     }
 
-    async disconnect(){
+    async disconnect() : Promise<boolean>{
         if( ! this.isConnected() ){
             return;
         }
 
         this.target.stopSerialRead();
-        this.target.disconnect();
+
+        try{
+            await this.target.disconnect();
+        }
+        catch(e){}
 
         this.target = undefined;
         this.transport = undefined;
+        this.device = undefined;
 
         this.flushSerial();
+        this.callOnConnectionChangeCallbacks(false);
+        return true;
     }
 
     async runScript(script: string){
@@ -86,11 +106,15 @@ export class DapLinkWrapper {
         return this.target != undefined && this.target.connected;
     }
 
-    async flash(data: Uint8Array) : Promise<void>{
+    async flash(data: Uint8Array, on_progress : OnProgressCallback) : Promise<void>{
         if( !this.isConnected() ){ return; }
+
+        this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => on_progress(progress) );
 
         await this.target?.flash(data);
         await this.target?.reset();
+
+        this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => {} );
     }
 
     async isMicropythonOnTarget(){
@@ -104,6 +128,14 @@ export class DapLinkWrapper {
         await wait(2000);
         
         return (read.indexOf("MPY") != -1);
+    }
+
+    addConnectionChangeListener(cb: OnConnectionChangeCallback): void{
+        this.onConnectionChange_cb.push(cb);
+    }
+
+    private callOnConnectionChangeCallbacks(is_connected: boolean){
+        this.onConnectionChange_cb.forEach( cb => cb(is_connected) );
     }
 
 
@@ -139,10 +171,8 @@ export class DapLinkWrapper {
 
     private async createTarget() : Promise<boolean> {
 
-        let device : USBDevice;
-
         try{
-            device = await navigator.usb.requestDevice({
+            this.device = await navigator.usb.requestDevice({
                 filters: [{vendorId: 0x0D28}]
             });
         }
@@ -151,13 +181,19 @@ export class DapLinkWrapper {
             return false;
         }
 
-        this.transport = new DAPjs.WebUSB(device);
+        this.transport = new DAPjs.WebUSB(this.device);
         this.target = new DAPjs.DAPLink(this.transport);
         
         this.target.on(DAPjs.DAPLink.EVENT_SERIAL_DATA, data => this.onEventSerialData(data) );
 
-        await this.target.connect();
-        await this.target.setSerialBaudrate(115200);
+        try{
+            await this.target.connect();
+            await this.target.setSerialBaudrate(115200);
+        }
+        catch(e){
+            console.warn(e);
+            return false;
+        }
 
         return true;
     }

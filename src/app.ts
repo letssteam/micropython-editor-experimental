@@ -19,9 +19,9 @@ export class Application{
     private spacer_container : HTMLElement = <HTMLElement>document.getElementById("spacer_container");
 
 
-
-    //@ts-ignore
     private button_run : Button;
+    private button_conn: ToggleButton;
+
     private dapLinkWrapper : DapLinkWrapper;
     private serial_output : SerialOutput;
 
@@ -32,6 +32,7 @@ export class Application{
 
         this.serial_output = new SerialOutput(this.right_container);
         this.dapLinkWrapper.addReiceivedDataListener( (data) => this.serial_output.write(data));
+        this.dapLinkWrapper.addConnectionChangeListener( is_connected => this.onConnectionChange(is_connected));
 
 
         this.topMenu(monaco_editor);
@@ -46,7 +47,7 @@ export class Application{
 
     private topMenu(monaco_editor: any){
 
-        let act_connection =  new ActionConnection(this.dapLinkWrapper, (is_connected) => this.onConnectionChange(is_connected));
+        let act_connection =  new ActionConnection(this.dapLinkWrapper);
         let act_run = new ActionRun(this.dapLinkWrapper, () => monaco_editor.getValue());
         let act_flash = new ActionFlash(document.body, this.dapLinkWrapper, this.serial_output, () => monaco_editor.getValue());
         let act_load = new ActionLoad((data) => monaco_editor.setValue(data));
@@ -54,7 +55,7 @@ export class Application{
         let act_settings = new ActionSettings();
 
 
-        new ToggleButton(this.top_container, "img/disconnect.png", "img/connect.png", act_connection, "Click to connect", "Click to disconnect");
+        this.button_conn = new ToggleButton(this.top_container, "img/disconnect.png", "img/connect.png", act_connection, "Click to connect", "Click to disconnect");
         this.button_run = new Button(this.top_container, "img/play.png", act_run, "Run script on target");
         new Button(this.top_container, "img/flash.png", act_flash, "Flash or Download");
 
@@ -71,9 +72,11 @@ export class Application{
     private onConnectionChange(is_connected: boolean){
         if(is_connected){
             this.button_run.enable();
+            this.button_conn.setButtonState(false);
         }
         else{
             this.button_run.disable();
+            this.button_conn.setButtonState(true);
         }
     }
 }
