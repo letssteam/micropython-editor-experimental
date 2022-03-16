@@ -9,15 +9,7 @@ export function print_hex_data( values : number[] ){
 
     values.forEach( (value, idx) => {
 
-        let s = value.toString(16).toUpperCase();
-        
-        try{
-            str += "0".repeat(2 - s.length) + s + " ";
-        }
-        catch(e){
-            console.error(e);
-            console.warn(str);
-        }
+        str += toHexString(value, 2);
 
         if( (idx + 1) % 4 == 0){
             str += " ";
@@ -26,6 +18,15 @@ export function print_hex_data( values : number[] ){
     });
 
     console.log(str);
+}
+
+export function toHexString(value: number, nb_digit: number ) : string{
+    let s = value.toString(16).toUpperCase();
+
+    if( s.length > nb_digit )
+        console.warn(`[TRUNCATE WARN] : Need to represent ${s} on ${nb_digit} digits...`);
+
+    return "0".repeat( Math.max(0, nb_digit - s.length) ) + s;
 }
 
 export async function wait(ms: number): Promise<void>{
