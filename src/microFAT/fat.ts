@@ -1,5 +1,3 @@
-import { saveAs } from "file-saver";
-import { print_hex_data } from "../common";
 import { FatBPB } from "./fat_BPB"
 import { FatRootDirectory, FileAttribute } from "./fat_rootDir";
 import { FatTable } from "./fat_table";
