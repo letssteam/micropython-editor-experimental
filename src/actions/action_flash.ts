@@ -1,10 +1,11 @@
-import { GetDataCallback } from "../common";
+import { GetDataCallback, toHexString } from "../common";
 import { FatFS } from "../microFAT/fat";
 
 import { saveAs } from "file-saver";
 import { DapLinkWrapper } from "../daplink";
 import { Action } from "./action";
 import { SerialOutput } from "../serialOutput";
+import { IHex } from "../ihex_util";
 
 export class ActionFlash implements Action {
 
@@ -25,16 +26,23 @@ export class ActionFlash implements Action {
 
     async run() : Promise<boolean>{
 
-        this.openDialog();
+        new IHex(0x08000000).parseBin(await this.generateBinary());
 
         if( this.daplink.isConnected() )
         {
+            this.openDialog();
+            this.addInfoLine("Searching Micropython...");
+
             if( await this.daplink.isMicropythonOnTarget() ){
-                await this.daplink.flashMain(this.getData_cb(), (prg: number) => console.log(`Progress: ${prg * 100}%`));
+                this.addInfoLine("MicroPython was found.");
+                await this.daplink.flashMain(this.getData_cb(), (prg: number) => this.setProgressBarValue(Math.round(prg*100)));
                 this.serial_ouput.clear();
+                this.showCloseButton();
             }
             else{
-                await this.daplink.flash(await this.generateBinary());
+                this.addInfoLine("MicroPython was not found... Reflash everything.");
+                await this.daplink.flash(await this.generateBinary(), (prg: number) =>  this.setProgressBarValue(Math.round(prg*100)), err => this.addInfoLine("Error: " + err, true));
+                this.showCloseButton();
             }
         }
         else{
@@ -111,9 +119,14 @@ export class ActionFlash implements Action {
         this.progress_bar_div.append(value);
         this.progress_bar_div.append(bar);
 
+        let infos = document.createElement("div");
+        infos.classList.add("progress-bar-infos");
+
 
         content.append(text);
         content.append(this.progress_bar_div);
+        content.append("Status:");
+        content.append(infos);
         content.append(close_button);
 
         container.append(title);
@@ -127,17 +140,34 @@ export class ActionFlash implements Action {
     private openDialog(){
         this.dialog.style.display = "block";
 
-        this.setProgressBarValue(33);
-        (this.progress_bar_div.querySelector(".progress-bar-close-button") as HTMLElement).style.display = "none";
+        this.setProgressBarValue(0);
+        (this.dialog.querySelector(".progress-bar-close-button") as HTMLElement).style.display = "none";
+        (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML = "";
     }
 
     private setProgressBarValue(value: number){
-        (this.progress_bar_div.querySelector(".progress-bar-value") as HTMLElement).innerHTML = value + "%";
-        (this.progress_bar_div.querySelector(".progress-bar-cursor") as HTMLElement).style.width = value + "%";
+        (this.dialog.querySelector(".progress-bar-value") as HTMLElement).innerHTML = value + "%";
+        (this.dialog.querySelector(".progress-bar-cursor") as HTMLElement).style.width = value + "%";
+    }
+
+    private addInfoLine(line: string, is_error: boolean = false){
+
+        if( is_error ){
+            (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="error">${line}</span><br/>`;
+            (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="error">Try unplugging and replugging your board...</span><br/>`;
+        }
+        else{
+            (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `${line}<br/>`;
+        }
+    }
+
+    private showCloseButton(){
+        (this.dialog.querySelector(".progress-bar-close-button") as HTMLElement).style.display = "block";
     }
 
     private closeDialog(){
         this.dialog.style.display = "none";
     }
+
 
 }

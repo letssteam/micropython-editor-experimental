@@ -77,3 +77,39 @@ body{
 .menu_button.disable {
     filter: grayscale(75%);
 }
+
+
+
+/***************************************************************************************/
+/***                               PROGRESS DIALOG                                   ***/
+/***************************************************************************************/
+
+.progress-dialog {
+    background-color: #000000E0;
+    color: black;
+}
+
+.progress-container {
+    background-color: white;
+}
+
+.progress-content-title {
+    color: white;
+    background-color: #e9407f;
+}
+
+.progress-bar-container {
+    background-color: #cfcfcf;
+}
+
+.progress-bar-cursor  {
+    background-color: #3bbdd6;
+}
+
+.progress-bar-close-button {
+    background: #e9407f;
+    color: white;
+}
+.progress-bar-infos .error {
+    color: #db1d4d
+}

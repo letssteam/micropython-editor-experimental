@@ -106,13 +106,22 @@ export class DapLinkWrapper {
         return this.target != undefined && this.target.connected;
     }
 
-    async flash(data: Uint8Array, on_progress : OnProgressCallback) : Promise<void>{
+    async flash(data: Uint8Array, on_progress : OnProgressCallback, on_error: (err: string) => void) : Promise<void>{
         if( !this.isConnected() ){ return; }
 
         this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => on_progress(progress) );
 
-        await this.target?.flash(data);
-        await this.target?.reset();
+        try{
+            await this.target?.stopSerialRead();
+            await this.target?.reset();
+            await this.target?.flash(data);
+            await wait(1000);
+            await this.target?.reset();
+        }
+        catch(e: any){
+            console.warn(e);
+            on_error(e.message);
+        }
 
         this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => {} );
     }
