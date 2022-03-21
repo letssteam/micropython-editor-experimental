@@ -26,9 +26,11 @@ export class TwoPanelContainer{
     }
 
     set_panel_size(left_size: number){
-        this.separator.style.left = left_size + "px";
-        this.left_container.style.width = left_size + "px";
-        this.right_container.style.width = (document.body.clientWidth - left_size - this.separator.clientWidth) + "px";
+        let percent = (left_size / document.body.clientWidth) * 100;
+
+        this.separator.style.left = percent + "%";
+        this.left_container.style.width = percent + "%";
+        this.right_container.style.width = `calc(${100-percent}% - ${this.separator.clientWidth}px)`;
     }
 
     hide_right_panel(){
