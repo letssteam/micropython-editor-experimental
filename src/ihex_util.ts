@@ -8,10 +8,9 @@ export class IHex {
 
     parseBin(bin_file: Uint8Array){
         let ihex = this.addressLine(this.base_address);
-        let nb_lines = Math.ceil(bin_file.length / 16); // 16 octects par line
+        let nb_lines = Math.ceil(bin_file.length / 16); // 16 octects par data line
         let offset = 0;
-
-        console.log(`nb_lines: ${nb_lines}`);
+        let pending_address_line = "";
 
         for(let i = 0; i < nb_lines; i++ ){
             let crc = 0x10;
@@ -21,7 +20,7 @@ export class IHex {
 
             if( address - offset > 0xFFFF ){
                 offset += 0x10000
-                ihex += this.addressLine(this.base_address + offset);
+                pending_address_line = this.addressLine(this.base_address + offset);
                 //ihex += this.offsetLine(offset);
             }
 
@@ -35,30 +34,31 @@ export class IHex {
             crc += 0x00;
 
             // Data
-            let only_00 = true;
-            let only_FF = true;
+            let is_data_only_FF = true;
             part.forEach( (value) => {
                 line += this.toHexString(value, 2);
                 crc += value;
 
-                if( value != 0x00 ){ only_00 = false; }
-                if( value != 0xFF ){ only_FF = false; }
+                if( value != 0xFF ){ is_data_only_FF = false; }
             });
 
-            //if data are only 00 skip the line
-            //if( only_00 ){ continue; }
-
-            // if data are only FF and offset < 0x0808_0000
-            if( only_FF && offset < 0x080800000 ){ continue; }
+            // if data are only FF and offset < 0x0808_0000 (address of FAT filesystem)
+            if( is_data_only_FF && offset < 0x080800000 ){ continue; }
 
             // Checksum
             line += this.computeCRC(crc);
+
+            // If we are wainting to print address line, do it before add first data line
+            if( pending_address_line.length > 0 ){
+                ihex += pending_address_line;
+                pending_address_line = "";
+            }
 
             // Add line
             ihex += `${line}\n`
         }
 
-        ihex += ":00000001FF";
+        ihex += ":00000001FF\n";
 
         console.log(ihex);
 
