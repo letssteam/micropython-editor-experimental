@@ -5,6 +5,7 @@ export class DapLinkWrapper {
 
     static readonly LENGTH_SERIAL_BUFFER : number = 30;
 
+    private is_webusb_available: boolean;
     private device?: USBDevice = undefined;
     private transport? : DAPjs.WebUSB = undefined;
     private target? : DAPjs.DAPLink = undefined;
@@ -14,15 +15,26 @@ export class DapLinkWrapper {
     private onConnectionChange_cb: OnConnectionChangeCallback[] = [];
 
     constructor(){
-        navigator.usb.addEventListener('disconnect', event => {
-            console.log(event);
+        if( navigator.usb ){
+            navigator.usb.addEventListener('disconnect', event => {
+                console.log(event);
 
-            if( this.isConnected() ){
-                if(this.device?.serialNumber == event.device.serialNumber){
-                    this.disconnect();
+                if( this.isConnected() ){
+                    if(this.device?.serialNumber == event.device.serialNumber){
+                        this.disconnect();
+                    }
                 }
-            }
-        });
+            });
+
+            this.is_webusb_available = true;
+        }
+        else{
+            this.is_webusb_available = false;
+        }
+    }
+
+    isWebUSBAvailable(){
+        return this.is_webusb_available;
     }
 
     addReiceivedDataListener ( cb : (data: string) => void ){
@@ -31,7 +43,7 @@ export class DapLinkWrapper {
 
     async connect() : Promise<boolean>{
         if( ! this.isConnected() ){
-            if(! await this.createTarget() ){
+            if(!this.is_webusb_available || ! await this.createTarget() ){
                 return false;
             }
         }
@@ -43,7 +55,7 @@ export class DapLinkWrapper {
 
     async disconnect() : Promise<boolean>{
         if( ! this.isConnected() ){
-            return;
+            return false;
         }
 
         this.target.stopSerialRead();
