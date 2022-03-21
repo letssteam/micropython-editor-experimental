@@ -2,7 +2,7 @@
 
 This is a simple experimentation to use MicroPython on the STM32L475 board (and STM32WB55 later).
 
-You can test it here : [https://letssteam.github.io/micropython-experiments/](https://letssteam.github.io/micropython-experiments/)
+Link to test : [https://letssteam.github.io/micropython-experiments/](https://letssteam.github.io/micropython-experiments/)
 
 ![](./img/screen-shot.png)
 
