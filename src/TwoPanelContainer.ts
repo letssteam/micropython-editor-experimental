@@ -30,4 +30,16 @@ export class TwoPanelContainer{
         this.left_container.style.width = left_size + "px";
         this.right_container.style.width = (document.body.clientWidth - left_size - this.separator.clientWidth) + "px";
     }
+
+    hide_right_panel(){
+        this.right_container.style.display = "none";
+        this.separator.style.display = "none";
+        this.left_container.style.width = "100%";
+    }
+
+    show_right_panel(){
+        this.right_container.style.display = "block";
+        this.separator.style.display = "block";
+        this.set_panel_size(50);
+    }
 }
