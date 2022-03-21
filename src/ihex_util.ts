@@ -18,10 +18,10 @@ export class IHex {
             let address = i*16;
             let line = `:${this.toHexString(part.length, 2)}`;
 
+            // The address overflow the 16 bits ?
             if( address - offset > 0xFFFF ){
                 offset += 0x10000
                 pending_address_line = this.addressLine(this.base_address + offset);
-                //ihex += this.offsetLine(offset);
             }
 
             // Address
@@ -48,7 +48,7 @@ export class IHex {
             // Checksum
             line += this.computeCRC(crc);
 
-            // If we are wainting to print address line, do it before add first data line
+            // If we are wainting to print address line, do it before add data line
             if( pending_address_line.length > 0 ){
                 ihex += pending_address_line;
                 pending_address_line = "";
