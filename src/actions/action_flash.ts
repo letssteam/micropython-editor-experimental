@@ -9,6 +9,9 @@ import { IHex } from "../ihex_util";
 
 export class ActionFlash implements Action {
 
+    static readonly FLASH_START_ADDRESS : number = 0x08000000;
+
+
     private getData_cb: GetDataCallback;
     private daplink: DapLinkWrapper;
     private serial_ouput: SerialOutput;
@@ -32,18 +35,20 @@ export class ActionFlash implements Action {
 
             if( await this.daplink.isMicropythonOnTarget() ){
                 this.addInfoLine("MicroPython was found.");
-                await this.daplink.flashMain(this.getData_cb(), (prg: number) => this.setProgressBarValue(Math.round(prg*100)));
+                await this.daplink.flashMain(this.getData_cb(), (prg: number) => this.setProgressBarValue(prg*100));
                 this.serial_ouput.clear();
                 this.showCloseButton();
             }
             else{
                 this.addInfoLine("MicroPython was not found... Reflash everything.");
-                await this.daplink.flash(await this.generateBinary(), (prg: number) =>  this.setProgressBarValue(Math.round(prg*100)), err => this.addInfoLine("Error: " + err, true));
+                let hex = new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary());
+
+                await this.daplink.flash(new TextEncoder().encode(hex), (prg: number) =>  this.setProgressBarValue(prg*100), err => this.addInfoLine("Error: " + err, true));
                 this.showCloseButton();
             }
         }
         else{
-            saveAs( new Blob( [new IHex(0x08000000).parseBin(await this.generateBinary())] ), "flash.hex" );
+            saveAs( new Blob( [new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary())] ), "flash.hex" );
         }
 
         return true;
@@ -143,7 +148,7 @@ export class ActionFlash implements Action {
     }
 
     private setProgressBarValue(value: number){
-        (this.dialog.querySelector(".progress-bar-value") as HTMLElement).innerHTML = value + "%";
+        (this.dialog.querySelector(".progress-bar-value") as HTMLElement).innerHTML = Math.round(value) + "%";
         (this.dialog.querySelector(".progress-bar-cursor") as HTMLElement).style.width = value + "%";
     }
 

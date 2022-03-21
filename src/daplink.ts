@@ -119,7 +119,7 @@ export class DapLinkWrapper {
         return this.target != undefined && this.target.connected;
     }
 
-    async flash(data: Uint8Array, on_progress : OnProgressCallback, on_error: (err: string) => void) : Promise<void>{
+    async flash(hex: Uint8Array, on_progress : OnProgressCallback, on_error: (err: string) => void) : Promise<void>{
         if( !this.isConnected() ){ return; }
 
         this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => on_progress(progress) );
@@ -127,7 +127,7 @@ export class DapLinkWrapper {
         try{
             await this.target?.stopSerialRead();
             await this.target?.reset();
-            await this.target?.flash(data);
+            await this.target?.flash(hex);
             await wait(1000);
             await this.target?.reset();
         }
@@ -247,7 +247,7 @@ export class DapLinkWrapper {
 
     private cleanString(str: string): string{
         return   str.replace(/\x04\x04/g, "")
-                    .replace(/\>OK/g, "")
+                    .replace(/\>OK[ ]?/g, "")
                     .replace(/\>\>\>[\r\n]*/g, "")
 
                     .replace(/[\>\r\n]*raw REPL; CTRL-B to exit[\r\n]*/g, "")
