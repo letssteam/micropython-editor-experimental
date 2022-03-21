@@ -1,4 +1,4 @@
-# MicroPython Let's STEAM - Experimentation
+# Let's STEAM - [MicroPython](https://micropython.org/) Editor (experimentation)
 
 This is a simple experimentation to use MicroPython on the STM32L475 board (and STM32WB55 later).
 
@@ -21,10 +21,17 @@ You can test it here : [https://letssteam.github.io/micropython-experiments/](ht
 **BONUS** You can use `gulp --watch` to recompile after editing a file (static file or Typescript file) !
 4. Run a simple HTTP server on `dist` folder (exemple: `python3 -m http.server`)
 
+## Flash with `.hex` file **VS** Flash with the editor (WebUSB)
+**Only if MicroPython is already flash on the target**
+
+When you flash the target with the generated `hex` file, ALL the data in the target can (will) be erased. When you use the editor to flash your python program, only the python files will be overwritten.
+
 ## :warning: About WebUSB
-This web site use [WebUSB](https://wicg.github.io/webusb/) to flash or send programme directly from your browser to the target. **BUT** this is ONLY available on chrome based browser ([Chrome](https://www.google.com/intl/fr_fr/chrome/), [Chromium](https://www.chromium.org/getting-involved/download-chromium/), [Brave](https://brave.com/fr/), [Edge](https://www.microsoft.com/fr-fr/edge), etc)
+This editor use [WebUSB](https://wicg.github.io/webusb/) to flash or send programme directly from your browser to the target. **BUT** this is ONLY available on chrome based browser ([Chrome](https://www.google.com/intl/fr_fr/chrome/), [Chromium](https://www.chromium.org/getting-involved/download-chromium/), [Brave](https://brave.com/fr/), [Edge](https://www.microsoft.com/fr-fr/edge), etc)
 
 On any other browser, neither the first two buttons (connect and flash) nor the serial output (on the right of the screen) appear.
+
+
 
 ## On last thing
 THIS IS AN _EXPERIMENTATION_, please be kind :heart:
