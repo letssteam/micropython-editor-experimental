@@ -25,9 +25,6 @@ export class ActionFlash implements Action {
     }
 
     async run() : Promise<boolean>{
-
-        new IHex(0x08000000).parseBin(await this.generateBinary());
-
         if( this.daplink.isConnected() )
         {
             this.openDialog();
@@ -46,7 +43,7 @@ export class ActionFlash implements Action {
             }
         }
         else{
-            saveAs( new Blob( [await this.generateBinary()] ), "flash.bin" );
+            saveAs( new Blob( [new IHex(0x08000000).parseBin(await this.generateBinary())] ), "flash.hex" );
         }
 
         return true;
