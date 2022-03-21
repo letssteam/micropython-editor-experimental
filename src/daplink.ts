@@ -48,6 +48,7 @@ export class DapLinkWrapper {
             }
         }
 
+        await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
         this.target?.startSerialRead();
         this.callOnConnectionChangeCallbacks(true);
         return true;
@@ -232,7 +233,7 @@ export class DapLinkWrapper {
             this.serial_buffer += split;
 
             if( split.at(-1) == '\n' ){
-                this.callOnReceiveCallbacks( this.serial_buffer.replace(/\x04\x04/g, "").replace(/\>OK/g, "") );
+                this.callOnReceiveCallbacks( this.cleanString(this.serial_buffer) );
                 this.serial_buffer = "";
             }
         });
@@ -242,5 +243,15 @@ export class DapLinkWrapper {
         this.cb_onReceiveData.forEach( (cb) => {
             cb(data);
         })
+    }
+
+    private cleanString(str: string): string{
+        return   str.replace(/\x04\x04/g, "")
+                    .replace(/\>OK/g, "")
+                    .replace(/\>\>\>[\r\n]*/g, "")
+
+                    .replace(/[\>\r\n]*raw REPL; CTRL-B to exit[\r\n]*/g, "")
+                    .replace(/Type "help\(\)" for more information.[\r\n]*/g, "")
+                    .replace(/MicroPython [\s\S]*\n$/g, "");
     }
 }
