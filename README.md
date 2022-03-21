@@ -36,5 +36,5 @@ All the vulnerabilities found by `npm audit` are for **dev** dependencies, only.
 
 
 
-## On last thing
+## One last thing
 THIS IS AN _EXPERIMENTATION_, please be kind :heart:
