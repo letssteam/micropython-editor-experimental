@@ -140,6 +140,8 @@ body{
     box-sizing: border-box;
     overflow: auto;
     white-space: pre-wrap;
+
+    padding: 4px;
 }
 
 
