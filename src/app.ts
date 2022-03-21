@@ -10,6 +10,7 @@ import { ActionFlash } from "./actions/action_flash";
 import { ToggleButton } from "./button/button_toggle";
 import { ActionSettings } from "./actions/action_settings";
 import { ButtonSpacer } from "./button/buttonSpacer";
+import { PlaceHolderButton } from "./button/button_placeholder";
 
 export class Application{
 
@@ -19,8 +20,8 @@ export class Application{
     private spacer_container : HTMLElement = <HTMLElement>document.getElementById("spacer_container");
 
 
-    private button_run : Button;
-    private button_conn: ToggleButton;
+    private button_run? : Button;
+    private button_conn?: ToggleButton;
 
     private dapLinkWrapper : DapLinkWrapper;
     private serial_output : SerialOutput;
@@ -38,10 +39,14 @@ export class Application{
         this.topMenu(monaco_editor);
 
 
-        //@ts-ignore
-        this.button_run.disable();
+        this.button_run?.disable();
 
-        new TwoPanelContainer(this.left_container, this.spacer_container, this.right_container).set_panel_size(document.body.clientWidth * 0.66);
+        if( this.dapLinkWrapper.isWebUSBAvailable() ){
+            new TwoPanelContainer(this.left_container, this.spacer_container, this.right_container).set_panel_size(document.body.clientWidth * 0.66);
+        }
+        else{
+            new TwoPanelContainer(this.left_container, this.spacer_container, this.right_container).hide_right_panel();
+        }
     }
 
 
@@ -54,9 +59,14 @@ export class Application{
         let act_save = new ActionSave(() => monaco_editor.getValue());
         let act_settings = new ActionSettings();
 
-
-        this.button_conn = new ToggleButton(this.top_container, "img/disconnect.png", "img/connect.png", act_connection, "Click to connect", "Click to disconnect");
-        this.button_run = new Button(this.top_container, "img/play.png", act_run, "Run script on target");
+        if( this.dapLinkWrapper.isWebUSBAvailable() ){
+            this.button_conn = new ToggleButton(this.top_container, "img/disconnect.png", "img/connect.png", act_connection, "Click to connect", "Click to disconnect");
+            this.button_run = new Button(this.top_container, "img/play.png", act_run, "Run script on target");
+        }
+        else{
+            new PlaceHolderButton(this.top_container);  // Connection placeholder
+            new PlaceHolderButton(this.top_container);  // Play placeholder
+        }
         new Button(this.top_container, "img/flash.png", act_flash, "Flash or Download");
 
         new ButtonSpacer(this.top_container);
@@ -71,12 +81,12 @@ export class Application{
 
     private onConnectionChange(is_connected: boolean){
         if(is_connected){
-            this.button_run.enable();
-            this.button_conn.setButtonState(false);
+            this.button_run?.enable();
+            this.button_conn?.setButtonState(false);
         }
         else{
-            this.button_run.disable();
-            this.button_conn.setButtonState(true);
+            this.button_run?.disable();
+            this.button_conn?.setButtonState(true);
         }
     }
 }
