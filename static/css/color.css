@@ -110,6 +110,15 @@ body{
     background: #e9407f;
     color: white;
 }
+
 .progress-bar-infos .error {
     color: #db1d4d
+}
+
+.progress-bar-infos .warning {
+    color: #db721d
+}
+
+.progress-bar-infos .info {
+    color: inherit;
 }

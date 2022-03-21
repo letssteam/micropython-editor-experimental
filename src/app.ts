@@ -54,7 +54,7 @@ export class Application{
 
         let act_connection =  new ActionConnection(this.dapLinkWrapper);
         let act_run = new ActionRun(this.dapLinkWrapper, () => monaco_editor.getValue());
-        let act_flash = new ActionFlash(document.body, this.dapLinkWrapper, this.serial_output, () => monaco_editor.getValue());
+        let act_flash = new ActionFlash(this.dapLinkWrapper, this.serial_output, () => monaco_editor.getValue());
         let act_load = new ActionLoad((data) => monaco_editor.setValue(data));
         let act_save = new ActionSave(() => monaco_editor.getValue());
         let act_settings = new ActionSettings();
