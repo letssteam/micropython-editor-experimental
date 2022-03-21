@@ -1,6 +1,6 @@
 # Let's STEAM - [MicroPython](https://micropython.org/) Editor (experimentation)
 
-This is a simple experimentation to use MicroPython on the STM32L475 board (and STM32WB55 later).
+This is a simple experimentation to use MicroPython on the STM32L475 board (and STM32WB55 later ?).
 
 Link to test : [https://letssteam.github.io/micropython-experiments/](https://letssteam.github.io/micropython-experiments/)
 
