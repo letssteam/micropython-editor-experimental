@@ -60,8 +60,6 @@ export class IHex {
 
         ihex += ":00000001FF\n";
 
-        console.log(ihex);
-
         return ihex;
     }
 
