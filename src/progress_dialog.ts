@@ -1,15 +1,15 @@
-export enum LoadingMessageType {
+export enum ProgressMessageType {
     INFO,
     WARNING,
     ERROR
 };
 
-export class LoadingDialog{
+export class ProgressDialog{
 
     private dialog: HTMLElement;
     private progress_bar_div: HTMLElement;
 
-    constructor(){
+    constructor(title_text: string = "Uploading...", content_text: string = "Your program is uploading to your target, please wait.<br/><br/><i>Do not unplugged your board, do not close this tab nor change tab during uploading.</i>"){
         this.dialog = document.createElement("div");
         this.dialog.classList.add("progress-dialog");
         this.dialog.style.display = "none";
@@ -19,17 +19,13 @@ export class LoadingDialog{
 
         let title = document.createElement("div");
         title.classList.add("progress-content-title");
-        title.innerText = "Uploading...";
+        title.innerText = title_text;
 
         let content = document.createElement("div");
         content.classList.add("progress-content");
 
         let text = document.createElement("p");
-        text.innerHTML = `
-            Your program is uploading to your target, please wait.<br/>
-            <br/>
-            <i>Do not unplugged your board, do not close this tab nor change tab during uploading.</i>
-        `;
+        text.innerHTML = content_text;
 
         let close_button = document.createElement("button");
         close_button.classList.add("progress-bar-close-button");
@@ -75,20 +71,20 @@ export class LoadingDialog{
         (this.dialog.querySelector(".progress-bar-cursor") as HTMLElement).style.width = progress + "%";
     }
 
-    addInfo(line: string, type: LoadingMessageType = LoadingMessageType.INFO){
+    addInfo(line: string, type: ProgressMessageType = ProgressMessageType.INFO){
 
         switch(type){
-            case LoadingMessageType.ERROR:
+            case ProgressMessageType.ERROR:
                 (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="error">${line}</span><br/>`;
                 (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="error">Try unplugging and replugging your board...</span><br/>`;
                 break;
 
-            case LoadingMessageType.WARNING:
+            case ProgressMessageType.WARNING:
                 (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="warning">${line}</span><br/>`;
                 break;
 
             default:
-            case LoadingMessageType.INFO:
+            case ProgressMessageType.INFO:
                 (this.dialog.querySelector(".progress-bar-infos") as HTMLElement).innerHTML += `<span class="info">${line}</span><br/>`;
                 break;
         }
