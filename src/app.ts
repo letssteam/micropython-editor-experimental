@@ -11,6 +11,7 @@ import { ToggleButton } from "./button/button_toggle";
 import { ActionSettings } from "./actions/action_settings";
 import { ButtonSpacer } from "./button/buttonSpacer";
 import { PlaceHolderButton } from "./button/button_placeholder";
+import { GetScriptCallback, SetScriptCallback } from "./common";
 
 export class Application{
 
@@ -28,7 +29,7 @@ export class Application{
 
 
 
-    constructor(monaco_editor: any){
+    constructor(get_script: GetScriptCallback, set_script: SetScriptCallback){
         this.dapLinkWrapper = new DapLinkWrapper();
 
         this.serial_output = new SerialOutput(this.right_container);
@@ -36,7 +37,7 @@ export class Application{
         this.dapLinkWrapper.addConnectionChangeListener( is_connected => this.onConnectionChange(is_connected));
 
 
-        this.topMenu(monaco_editor);
+        this.topMenu(get_script, set_script);
 
 
         this.button_run?.disable();
@@ -50,13 +51,13 @@ export class Application{
     }
 
 
-    private topMenu(monaco_editor: any){
+    private topMenu(get_script: GetScriptCallback, set_script: SetScriptCallback){
 
         let act_connection =  new ActionConnection(this.dapLinkWrapper);
-        let act_run = new ActionRun(this.dapLinkWrapper, () => monaco_editor.getValue());
-        let act_flash = new ActionFlash(this.dapLinkWrapper, this.serial_output, () => monaco_editor.getValue());
-        let act_load = new ActionLoad((data) => monaco_editor.setValue(data));
-        let act_save = new ActionSave(() => monaco_editor.getValue());
+        let act_run = new ActionRun(this.dapLinkWrapper, get_script);
+        let act_flash = new ActionFlash(this.dapLinkWrapper, this.serial_output, get_script);
+        let act_load = new ActionLoad(set_script);
+        let act_save = new ActionSave(get_script);
         let act_settings = new ActionSettings();
 
         if( this.dapLinkWrapper.isWebUSBAvailable() ){
