@@ -1,4 +1,5 @@
-export type GetDataCallback = () => string;
+export type GetScriptCallback = () => string;
+export type SetScriptCallback = (script: string) => void;
 export type OnProgressCallback = (progress: number) => void;
 export type OnErrorCallback = (error: string) => void;
 export type OnConnectionChangeCallback = (is_connected: boolean) => void;

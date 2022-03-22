@@ -1,12 +1,12 @@
 import { saveAs } from "file-saver";
-import { GetDataCallback } from "../common";
+import { GetScriptCallback } from "../common";
 import { Action } from "./action";
 
 export class ActionSave implements Action{
 
-    private cb_getScript : GetDataCallback;
+    private cb_getScript : GetScriptCallback;
 
-    constructor(getScript: GetDataCallback){
+    constructor(getScript: GetScriptCallback){
         this.cb_getScript = getScript;
     }
 

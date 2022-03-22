@@ -1,4 +1,4 @@
-import { GetDataCallback, toHexString } from "../common";
+import { GetScriptCallback, toHexString } from "../common";
 import { FatFS } from "../microFAT/fat";
 
 import { saveAs } from "file-saver";
@@ -13,13 +13,13 @@ export class ActionFlash implements Action {
     static readonly FLASH_START_ADDRESS : number = 0x08000000;
 
 
-    private getData_cb: GetDataCallback;
+    private get_script_cb: GetScriptCallback;
     private daplink: DapLinkWrapper;
     private serial_ouput: SerialOutput;
     private dialog: ProgressDialog;
 
-    constructor(daplink: DapLinkWrapper, serial_output: SerialOutput, getData: GetDataCallback){
-        this.getData_cb = getData;
+    constructor(daplink: DapLinkWrapper, serial_output: SerialOutput, get_script: GetScriptCallback){
+        this.get_script_cb = get_script;
         this.daplink = daplink;
         this.serial_ouput = serial_output;
         this.dialog = new ProgressDialog();
@@ -33,7 +33,7 @@ export class ActionFlash implements Action {
 
             if( await this.daplink.isMicropythonOnTarget() ){
                 this.dialog.addInfo("MicroPython was found.");
-                await this.daplink.flashMain(   this.getData_cb(), 
+                await this.daplink.flashMain(   this.get_script_cb(), 
                                                 (prg: number) => this.dialog.setProgressValue(prg*100),
                                                 (err) => this.dialog.addInfo(err, ProgressMessageType.ERROR));
                 this.serial_ouput.clear();
@@ -63,7 +63,7 @@ export class ActionFlash implements Action {
         fat.addFile("README", "TXT", await this.readFileAsText("files/README.txt"));
         fat.addFile("BOOT", "PY", await this.readFileAsText("files/boot.py"));
         fat.addFile("PYBCDC", "INF", await this.readFileAsText("files/pybcdc.inf"));
-        fat.addFile("MAIN", "PY", this.getData_cb());
+        fat.addFile("MAIN", "PY", this.get_script_cb());
 
         let base = await this.readFileAsBlob("files/micropython_L475_v1.18_PADDED.bin");
         let fat_part = fat.generate_binary();
