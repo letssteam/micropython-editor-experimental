@@ -1,5 +1,5 @@
 import * as DAPjs from "dapjs";
-import { OnConnectionChangeCallback, OnProgressCallback, wait } from "./common";
+import { OnConnectionChangeCallback, OnErrorCallback, OnProgressCallback, wait } from "./common";
 
 export class DapLinkWrapper {
 
@@ -17,8 +17,6 @@ export class DapLinkWrapper {
     constructor(){
         if( navigator.usb ){
             navigator.usb.addEventListener('disconnect', event => {
-                console.log(event);
-
                 if( this.isConnected() ){
                     if(this.device?.serialNumber == event.device.serialNumber){
                         this.disconnect();
@@ -59,10 +57,10 @@ export class DapLinkWrapper {
             return false;
         }
 
-        this.target.stopSerialRead();
+        this.target?.stopSerialRead();
 
         try{
-            await this.target.disconnect();
+            await this.target?.disconnect();
         }
         catch(e){}
 
@@ -75,16 +73,16 @@ export class DapLinkWrapper {
         return true;
     }
 
-    async runScript(script: string){
+    async runScript(script: string, on_progress: OnProgressCallback, on_error: OnErrorCallback){
         
         if( !await this.connect() ){
             return;
         }
 
-        await this.sendScript(script + "\n\n\n");
+        await this.sendScript(script + "\n\n\n", on_progress, on_error);
     }
 
-    async flashMain(script: string, on_progress : OnProgressCallback){
+    async flashMain(script: string, on_progress : OnProgressCallback, on_error: OnErrorCallback){
 
         let bin_data = new TextEncoder().encode(script);
         let prog = "prog=[";
@@ -108,7 +106,7 @@ export class DapLinkWrapper {
                     "\n"
                     "\n";
 
-        await this.sendScript(main, on_progress);
+        await this.sendScript(main, on_progress, on_error);
         await this.target?.serialWrite(String.fromCharCode(2)); // [Ctrl+B] exit raw mode (REPL Python)
         await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Soft reset (REPL Python)
 
@@ -119,7 +117,7 @@ export class DapLinkWrapper {
         return this.target != undefined && this.target.connected;
     }
 
-    async flash(hex: Uint8Array, on_progress : OnProgressCallback, on_error: (err: string) => void) : Promise<void>{
+    async flash(hex: Uint8Array, on_progress : OnProgressCallback, on_error: OnErrorCallback) : Promise<void>{
         if( !this.isConnected() ){ return; }
 
         this.target?.on(DAPjs.DAPLink.EVENT_PROGRESS, progress => on_progress(progress) );
@@ -132,7 +130,7 @@ export class DapLinkWrapper {
             await this.target?.reset();
         }
         catch(e: any){
-            console.warn(e);
+            console.warn("[FLASH]: ", e);
             on_error(e.message);
         }
 
@@ -142,14 +140,20 @@ export class DapLinkWrapper {
     async isMicropythonOnTarget(){
         if( !this.isConnected() ){ return; }
 
-        await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
-        await wait(2000);
-        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D]
+        try{
+            await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
+            await wait(2000);
+            await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D]
 
-        let read : string =  new TextDecoder().decode( await this.target?.serialRead() );
-        await wait(2000);
-        
-        return (read.indexOf("MPY") != -1);
+            let read : string =  new TextDecoder().decode( await this.target?.serialRead() );
+            await wait(2000);
+            
+            return (read.indexOf("MPY") != -1);
+        }
+        catch(e: any){
+            console.error("[IS_MICROPYTHON_ON_TARGET]: ", e);
+            return false;
+        }
     }
 
     addConnectionChangeListener(cb: OnConnectionChangeCallback): void{
@@ -161,7 +165,7 @@ export class DapLinkWrapper {
     }
 
 
-    private async sendScript(script: string, on_progress?: OnProgressCallback ){
+    private async sendScript(script: string, on_progress?: OnProgressCallback, on_error?: OnErrorCallback ){
 
         if( !this.isConnected() ){ return; }
         if( script.length == 0 ){ return; }
@@ -170,24 +174,30 @@ export class DapLinkWrapper {
 
         let chunks = final_script.match(new RegExp('[\\s\\S]{1,' + DapLinkWrapper.LENGTH_SERIAL_BUFFER + '}', 'g')) || [];
 
-        await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
-        await wait(2000);
+        try{
+            await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
+            await wait(2000);
 
-        await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
+            await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
 
-        for(let i = 0; i < chunks.length; ++i ){
-            await this.target?.serialWrite(chunks[i]);
-            await this.target?.serialRead();
+            for(let i = 0; i < chunks.length; ++i ){
+                await this.target?.serialWrite(chunks[i]);
+                await this.target?.serialRead();
 
-            if(on_progress != undefined){
-                on_progress( i / chunks.length );
+                if(on_progress != undefined){
+                    on_progress( i / chunks.length );
+                }
+
             }
 
+            await this.target?.serialWrite("__send_script_execution__()\n\n");
+
+            await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Start REPL on paste code (REPL Python)
         }
-
-        await this.target?.serialWrite("__send_script_execution__()\n\n");
-
-        await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Start REPL on paste code (REPL Python)
+        catch(e: any){
+            console.warn("[SEND SCRIPT]: ", e);
+            if(on_error){ on_error(e.message); }
+        }
 
     }
 
@@ -248,7 +258,7 @@ export class DapLinkWrapper {
     private cleanString(str: string): string{
         return   str.replace(/\x04\x04/g, "")
                     .replace(/\>OK[ ]?/g, "")
-                    .replace(/\>\>\>[\r\n]*/g, "")
+                    .replace(/\>\>\>[ \r\n]*/g, "")
 
                     .replace(/[\>\r\n]*raw REPL; CTRL-B to exit[\r\n]*/g, "")
                     .replace(/Type "help\(\)" for more information.[\r\n]*/g, "")

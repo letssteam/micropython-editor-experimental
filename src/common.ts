@@ -1,5 +1,6 @@
 export type GetDataCallback = () => string;
 export type OnProgressCallback = (progress: number) => void;
+export type OnErrorCallback = (error: string) => void;
 export type OnConnectionChangeCallback = (is_connected: boolean) => void;
 
 

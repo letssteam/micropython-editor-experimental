@@ -6,7 +6,7 @@ import { DapLinkWrapper } from "../daplink";
 import { Action } from "./action";
 import { SerialOutput } from "../serialOutput";
 import { IHex } from "../ihex_util";
-import { LoadingDialog, LoadingMessageType } from "../loading_dialog";
+import { ProgressDialog, ProgressMessageType } from "../progress_dialog";
 
 export class ActionFlash implements Action {
 
@@ -16,13 +16,13 @@ export class ActionFlash implements Action {
     private getData_cb: GetDataCallback;
     private daplink: DapLinkWrapper;
     private serial_ouput: SerialOutput;
-    private dialog: LoadingDialog;
+    private dialog: ProgressDialog;
 
     constructor(daplink: DapLinkWrapper, serial_output: SerialOutput, getData: GetDataCallback){
         this.getData_cb = getData;
         this.daplink = daplink;
         this.serial_ouput = serial_output;
-        this.dialog = new LoadingDialog();
+        this.dialog = new ProgressDialog();
     }
 
     async run() : Promise<boolean>{
@@ -33,17 +33,19 @@ export class ActionFlash implements Action {
 
             if( await this.daplink.isMicropythonOnTarget() ){
                 this.dialog.addInfo("MicroPython was found.");
-                await this.daplink.flashMain(this.getData_cb(), (prg: number) => this.dialog.setProgressValue(prg*100));
+                await this.daplink.flashMain(   this.getData_cb(), 
+                                                (prg: number) => this.dialog.setProgressValue(prg*100),
+                                                (err) => this.dialog.addInfo(err, ProgressMessageType.ERROR));
                 this.serial_ouput.clear();
                 this.dialog.showCloseButton();
             }
             else{
-                this.dialog.addInfo("MicroPython was not found... Reflash everything.", LoadingMessageType.WARNING);
+                this.dialog.addInfo("MicroPython was not found... Reflash everything.", ProgressMessageType.WARNING);
                 let hex = new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary());
 
                 await this.daplink.flash(   new TextEncoder().encode(hex), 
                                             (prg: number) =>  this.dialog.setProgressValue(prg*100), 
-                                            err => this.dialog.addInfo("Error: " + err, LoadingMessageType.ERROR)
+                                            err => this.dialog.addInfo("Error: " + err, ProgressMessageType.ERROR)
                                         );
                 this.dialog.showCloseButton();
             }
