@@ -1,7 +1,7 @@
 export enum ProgressMessageType {
-    INFO,
-    WARNING,
-    ERROR
+    INFO = "info",
+    WARNING = "warning",
+    ERROR = "error"
 };
 
 export class ProgressDialog{
@@ -72,22 +72,7 @@ export class ProgressDialog{
     }
 
     addInfo(line: string, type: ProgressMessageType = ProgressMessageType.INFO){
-
-        switch(type){
-            case ProgressMessageType.ERROR:
-                (this.dialog.querySelector(".progress-dialog-infos") as HTMLElement).innerHTML += `<span class="error">${line}</span><br/>`;
-                (this.dialog.querySelector(".progress-dialog-infos") as HTMLElement).innerHTML += `<span class="error">Try unplugging and replugging your board...</span><br/>`;
-                break;
-
-            case ProgressMessageType.WARNING:
-                (this.dialog.querySelector(".progress-dialog-infos") as HTMLElement).innerHTML += `<span class="warning">${line}</span><br/>`;
-                break;
-
-            default:
-            case ProgressMessageType.INFO:
-                (this.dialog.querySelector(".progress-dialog-infos") as HTMLElement).innerHTML += `<span class="info">${line}</span><br/>`;
-                break;
-        }
+        (this.dialog.querySelector(".progress-dialog-infos") as HTMLElement).innerHTML += `<span class="${type}">${line}</span><br/>`;
     }
 
     open(){

@@ -215,7 +215,7 @@ export class DapLinkWrapper {
         catch(e: any){
             console.warn(e);
 
-            if( e.message.indexOf("No device selected") != -1 ){
+            if( e.message.indexOf("No device selected") == -1 ){
                 new AlertDialog("WebUSB Error", `An error occured with the WebUSB: <br/><div class="citation-error">${e.message}</div><br/>Try unplugging and replugging your board or restart your browser.<br/><br/><i>Note: WebUSB is experimental and only support on chrome based browser (chrome, chromium, brave, edge, etc)</i>`, AlertDialogIcon.ERROR).open();
             }
             return false;

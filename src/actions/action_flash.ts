@@ -29,23 +29,31 @@ export class ActionFlash implements Action {
         if( this.daplink.isConnected() )
         {
             this.dialog.open();
-            this.dialog.addInfo("Searching Micropython...");
+            this.dialog.addInfo("Searching for MicroPython...");
 
             if( await this.daplink.isMicropythonOnTarget() ){
                 this.dialog.addInfo("MicroPython was found.");
+                this.dialog.addInfo("Flashing python scripts");
                 await this.daplink.flashMain(   this.get_script_cb(), 
                                                 (prg: number) => this.dialog.setProgressValue(prg*100),
-                                                (err) => this.dialog.addInfo(err, ProgressMessageType.ERROR));
+                                                (err) => {
+                                                    this.dialog.addInfo("[FlashMain] Error: " + err, ProgressMessageType.ERROR)
+                                                    this.dialog.addInfo("Try unplugging and replugging your board...", ProgressMessageType.ERROR);
+                                                });
                 this.serial_ouput.clear();
                 this.dialog.showCloseButton();
             }
             else{
                 this.dialog.addInfo("MicroPython was not found... Reflash everything.", ProgressMessageType.WARNING);
+                this.dialog.addInfo("Flashing MicroPython...");
                 let hex = new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary());
 
                 await this.daplink.flash(   new TextEncoder().encode(hex), 
                                             (prg: number) =>  this.dialog.setProgressValue(prg*100), 
-                                            err => this.dialog.addInfo("Error: " + err, ProgressMessageType.ERROR)
+                                            (err) => {
+                                                this.dialog.addInfo("[Flash] Error: " + err, ProgressMessageType.ERROR)
+                                                this.dialog.addInfo("Try unplugging and replugging your board...", ProgressMessageType.ERROR);
+                                            }
                                         );
                 this.dialog.showCloseButton();
             }
