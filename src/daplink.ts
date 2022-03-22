@@ -1,4 +1,5 @@
 import * as DAPjs from "dapjs";
+import { AlertDialog, AlertDialogIcon } from "./alert_dialog";
 import { OnConnectionChangeCallback, OnErrorCallback, OnProgressCallback, wait } from "./common";
 
 export class DapLinkWrapper {
@@ -170,7 +171,7 @@ export class DapLinkWrapper {
         if( !this.isConnected() ){ return; }
         if( script.length == 0 ){ return; }
 
-        let final_script = "def __send_script_execution__():\n\t" + script.replace(/\n/g, "\n\t") + "\n\n";
+        let final_script = `def __send_script_execution__():\n\t` + script.replace(/\n/g, "\n\t") + "\n\n";
 
         let chunks = final_script.match(new RegExp('[\\s\\S]{1,' + DapLinkWrapper.LENGTH_SERIAL_BUFFER + '}', 'g')) || [];
 
@@ -190,7 +191,10 @@ export class DapLinkWrapper {
 
             }
 
-            await this.target?.serialWrite("__send_script_execution__()\n\n");
+            await this.target?.serialWrite( "try:\n");
+            await this.target?.serialWrite(     "\t__send_script_execution__()\n");
+            await this.target?.serialWrite( "except KeyboardInterrupt:\n");
+            await this.target?.serialWrite(     "\tprint(\"--INTERRUPT RUNNING PROGRAM--\")\n\n");
 
             await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Start REPL on paste code (REPL Python)
         }
@@ -208,8 +212,12 @@ export class DapLinkWrapper {
                 filters: [{vendorId: 0x0D28}]
             });
         }
-        catch(e){
+        catch(e: any){
             console.warn(e);
+
+            if( e.message.indexOf("No device selected") != -1 ){
+                new AlertDialog("WebUSB Error", `An error occured with the WebUSB: <br/><div class="citation-error">${e.message}</div><br/>Try unplugging and replugging your board or restart your browser.<br/><br/><i>Note: WebUSB is experimental and only support on chrome based browser (chrome, chromium, brave, edge, etc)</i>`, AlertDialogIcon.ERROR).open();
+            }
             return false;
         }
 
@@ -222,8 +230,9 @@ export class DapLinkWrapper {
             await this.target.connect();
             await this.target.setSerialBaudrate(115200);
         }
-        catch(e){
+        catch(e: any){
             console.warn(e);
+            new AlertDialog("Connection failed", `An error occured during the connection: <br/><div class="citation-error">${e.message}</div><br/>Try unplugging and replugging your board...`, AlertDialogIcon.ERROR).open();
             return false;
         }
 
