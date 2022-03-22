@@ -7,7 +7,9 @@ body{
     #spacer_container div { color: black; }
 
 
-
+.citation-error {
+    background-color: #fff5d1;
+}
 
 /***************************************************************************************/
 /***                                    TOP MENU                                     ***/
@@ -89,36 +91,61 @@ body{
     color: black;
 }
 
-.progress-container {
+.progress-dialog-container {
     background-color: white;
 }
 
-.progress-content-title {
+.progress-dialog-title {
     color: white;
     background-color: #e9407f;
 }
 
-.progress-bar-container {
+.progress-dialog-bar-container {
     background-color: #cfcfcf;
 }
 
-.progress-bar-cursor  {
+.progress-dialog-bar-cursor  {
     background-color: #3bbdd6;
 }
 
-.progress-bar-close-button {
+.progress-dialog-close-button {
     background: #e9407f;
     color: white;
 }
 
-.progress-bar-infos .error {
+.progress-dialog-infos .error {
     color: #db1d4d
 }
 
-.progress-bar-infos .warning {
+.progress-dialog-infos .warning {
     color: #db721d
 }
 
-.progress-bar-infos .info {
+.progress-dialog-infos .info {
     color: inherit;
+}
+
+
+
+/***************************************************************************************/
+/***                                 ALERT DIALOG                                    ***/
+/***************************************************************************************/
+
+.alert-dialog {
+    background-color: #000000E0;
+    color: black;
+}
+
+.alert-dialog-container {
+    background-color: white;
+}
+
+.alert-dialog-title {
+    color: white;
+    background-color: #e9407f;
+}
+
+.alert-dialog-close-button {
+    background: #e9407f;
+    color: white;
 }
