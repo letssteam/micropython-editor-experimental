@@ -60,6 +60,8 @@ export class IHex {
 
         ihex += ":00000001FF\n";
 
+        console.log(`iHex size :  ${ihex.length} bytes`)
+
         return ihex;
     }
 
