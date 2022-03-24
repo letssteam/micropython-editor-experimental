@@ -53,8 +53,9 @@ gulp.task("generate_json_fat", async function(cb){
         let filename = file.substring( file.lastIndexOf("/") + 1);
 
         result.push({ 
-                        name: filename.substring(0, filename.lastIndexOf(".")),
-                        extension: filename.substring(filename.lastIndexOf(".") + 1),
+                        name: filename.substring(0, filename.lastIndexOf(".")).toUpperCase(),
+                        extension: filename.substring(filename.lastIndexOf(".") + 1).toUpperCase(),
+                        isBinary: fs.readFileSync(file, {encoding: null, flag: "r"}).findIndex( (value) => value == 0x00 ) != -1,
                         path: file.substring(DIST_PATH.length)
                     })
     });
