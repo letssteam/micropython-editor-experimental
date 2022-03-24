@@ -7,6 +7,13 @@ import { Action } from "./action";
 import { SerialOutput } from "../serialOutput";
 import { IHex } from "../ihex_util";
 import { ProgressDialog, ProgressMessageType } from "../progress_dialog";
+import { AlertDialog, AlertDialogIcon } from "../alert_dialog";
+
+class FatFile {
+    name: string = "";
+    extension: string = "";
+    path: string = "";
+}
 
 export class ActionFlash implements Action {
 
@@ -46,39 +53,65 @@ export class ActionFlash implements Action {
             else{
                 this.dialog.addInfo("MicroPython was not found... Reflash everything.", ProgressMessageType.WARNING);
                 this.dialog.addInfo("Flashing MicroPython...");
-                let hex = new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary());
 
-                await this.daplink.flash(   new TextEncoder().encode(hex), 
-                                            (prg: number) =>  this.dialog.setProgressValue(prg*100), 
-                                            (err) => {
-                                                this.dialog.addInfo("[Flash] Error: " + err, ProgressMessageType.ERROR)
-                                                this.dialog.addInfo("Try unplugging and replugging your board...", ProgressMessageType.ERROR);
-                                            }
-                                        );
+                let bin = await this.generateBinary();
+
+                if( bin == null ){
+                    this.dialog.addInfo("Failed to generate binary... Abort")
+                }
+                else{
+                    let hex = new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(bin);
+
+                    await this.daplink.flash(   new TextEncoder().encode(hex), 
+                                                (prg: number) =>  this.dialog.setProgressValue(prg*100), 
+                                                (err) => {
+                                                    this.dialog.addInfo("[Flash] Error: " + err, ProgressMessageType.ERROR)
+                                                    this.dialog.addInfo("Try unplugging and replugging your board...", ProgressMessageType.ERROR);
+                                                }
+                                            );
+                }
+
                 this.dialog.showCloseButton();
             }
         }
         else{
-            saveAs( new Blob( [new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(await this.generateBinary())] ), "flash.hex" );
+            let bin = await this.generateBinary();
+            if( bin != null ){
+                saveAs( new Blob( [new IHex(ActionFlash.FLASH_START_ADDRESS).parseBin(bin)] ), "flash.hex" );
+            }
         }
 
         return true;
     }
 
-    private async generateBinary() : Promise<Uint8Array>{
+    private async generateBinary() : Promise<Uint8Array | null>{
         let fat = new FatFS("PYBFLASH");
+        let base : ArrayBuffer;
 
-        fat.addFile("README", "TXT", await this.readFileAsText("files/README.txt"));
-        fat.addFile("BOOT", "PY", await this.readFileAsText("files/boot.py"));
-        fat.addFile("PYBCDC", "INF", await this.readFileAsText("files/pybcdc.inf"));
+        try{
+            let files : Array<FatFile> = JSON.parse( await this.readFileAsText("assets/fat.json"))
+            
+            files.forEach( async (file) => {
+                fat.addFile(file.name, file.extension, await this.readFileAsText(file.path))
+            });
+
+            base = await this.readFileAsBlob("assets/micropython_L475_v1.18_PADDED.bin");
+        }
+        catch(e: any){
+            console.error("[GENERATE BINARY]: ", e);
+            new AlertDialog("Fatal error", `An error occured during the image generation: <br/><div class="citation-error">${e.message}</div><br/>Check your internet connection or restart your browser.`, AlertDialogIcon.ERROR).open();
+            return null;
+        }
+
         fat.addFile("MAIN", "PY", this.get_script_cb());
 
-        let base = await this.readFileAsBlob("files/micropython_L475_v1.18_PADDED.bin");
         let fat_part = fat.generate_binary();
 
         let bin_file = new Uint8Array( base.byteLength + fat_part.length);
         bin_file.set(new Uint8Array(base), 0);
         bin_file.set(new Uint8Array(fat_part), base.byteLength);
+
+        console.log(`Binary size :  ${bin_file.byteLength} bytes`)
 
         return bin_file;
     }
