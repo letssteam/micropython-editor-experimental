@@ -12,6 +12,7 @@ import { AlertDialog, AlertDialogIcon } from "../alert_dialog";
 class FatFile {
     name: string = "";
     extension: string = "";
+    isBinary: boolean = false;
     path: string = "";
 }
 
@@ -89,13 +90,18 @@ export class ActionFlash implements Action {
         let base : ArrayBuffer;
 
         try{
-            let files : Array<FatFile> = JSON.parse( await this.readFileAsText("assets/fat.json"))
+            let files : FatFile[] = await this.readFileAsJSON("assets/fat.json"); //JSON.parse( await this.readFileAsText("assets/fat.json"))
             
             files.forEach( async (file) => {
-                fat.addFile(file.name, file.extension, await this.readFileAsText(file.path))
+                console.log(file)
+
+                if(file.isBinary)
+                    fat.addBinaryFile(file.name, file.extension, new Uint8Array( await this.readFileAsBinary(file.path)) )
+                else
+                    fat.addFile(file.name, file.extension, await this.readFileAsText(file.path))
             });
 
-            base = await this.readFileAsBlob("assets/micropython_L475_v1.18_PADDED.bin");
+            base = await this.readFileAsBinary("assets/micropython_L475_v1.18_PADDED.bin");
         }
         catch(e: any){
             console.error("[GENERATE BINARY]: ", e);
@@ -116,13 +122,18 @@ export class ActionFlash implements Action {
         return bin_file;
     }
 
-    private async readFileAsText(file: string) : Promise<string> {
+    private async readFileAsJSON(file: string) : Promise<any> {
         let rep = await fetch(file);
-        return await rep.text();
+        return rep.json();
     }
 
-    private async readFileAsBlob(file: string) : Promise<ArrayBuffer> {
+    private async readFileAsText(file: string) : Promise<string> {
         let rep = await fetch(file);
-        return await rep.arrayBuffer();
+        return rep.text();
+    }
+
+    private async readFileAsBinary(file: string) : Promise<ArrayBuffer> {
+        let rep = await fetch(file);
+        return rep.arrayBuffer();
     }
 }

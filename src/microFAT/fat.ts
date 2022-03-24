@@ -48,6 +48,10 @@ export class FatFS {
         this.root.addFile(filename, extension, FileAttribute.ARCHIVE, enc.encode(content));
     }
 
+    addBinaryFile(filename: string, extension: string, content: Uint8Array){
+        this.root.addFile(filename, extension, FileAttribute.ARCHIVE, content);
+    }
+
     generate_binary(){
         return          this.BPB.generateBPB()
                 .concat(this.table.generateTable())
