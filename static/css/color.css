@@ -81,6 +81,11 @@ body{
 }
 
 
+.menu_button_dropdown {
+    color: black;
+    background-color: #f3f5f6;
+}
+
 
 /***************************************************************************************/
 /***                               PROGRESS DIALOG                                   ***/

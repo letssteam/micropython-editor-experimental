@@ -127,15 +127,16 @@ body{
 
     border-radius: 5px;
     padding: 4px;
-
-
-    color: white;
-    background-color: darkgray;
 }
 
 .menu_button_dropdown p {
     cursor: pointer;
     margin: 8px;
+}
+
+.menu_button_dropdown p:hover {
+    text-underline-offset: 3px;
+    text-decoration: underline dashed;
 }
 
 .menu_button_dropdown p span{
