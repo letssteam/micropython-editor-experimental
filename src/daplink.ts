@@ -161,6 +161,19 @@ export class DapLinkWrapper {
         this.onConnectionChange_cb.push(cb);
     }
 
+    async sendKeyboardInterrupt(){
+        if( !this.isConnected() ){ return; }
+
+        try{
+            await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
+            await wait(1000);
+        }
+        catch(e: any){
+            console.error("[SEND_KEYBOARD_INTERRUPT]: ", e);
+            return false;
+        }
+    }
+
     private callOnConnectionChangeCallbacks(is_connected: boolean){
         this.onConnectionChange_cb.forEach( cb => cb(is_connected) );
     }
@@ -241,7 +254,7 @@ export class DapLinkWrapper {
 
     private flushSerial(){
         if( this.serial_buffer.length > 0 ){
-            this.onEventSerialData("\n");
+            this.serial_buffer = "";
         }
     }
 
@@ -266,7 +279,7 @@ export class DapLinkWrapper {
 
     private cleanString(str: string): string{
         return   str.replace(/\x04\x04/g, "")
-                    .replace(/\>OK[ ]?/g, "")
+                    .replace(/\>OK[\x04\>]*/g, "")
                     .replace(/\>\>\>[ \r\n]*/g, "")
 
                     .replace(/[\>\r\n]*raw REPL; CTRL-B to exit[\r\n]*/g, "")
