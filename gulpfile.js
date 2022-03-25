@@ -55,7 +55,7 @@ gulp.task("generate_json_fat", async function(cb){
         result.push({ 
                         name: filename.substring(0, filename.lastIndexOf(".")).toUpperCase(),
                         extension: filename.substring(filename.lastIndexOf(".") + 1).toUpperCase(),
-                        isBinary: fs.readFileSync(file, {encoding: null, flag: "r"}).findIndex( (value) => value == 0x00 ) != -1,
+                        isBinary: fs.readFileSync(file, {encoding: null, flag: "r"}).slice(0, 300).findIndex( (value) => value == 0x00 ) != -1, // If there is a null (0x00) character in the first 300, so it's a binary file
                         path: file.substring(DIST_PATH.length)
                     })
     });
