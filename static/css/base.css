@@ -119,6 +119,28 @@ body{
     display: inline-block;
 }
 
+.menu_button_dropdown {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+
+    border-radius: 5px;
+    padding: 4px;
+
+
+    color: white;
+    background-color: darkgray;
+}
+
+.menu_button_dropdown p {
+    cursor: pointer;
+    margin: 8px;
+}
+
+.menu_button_dropdown p span{
+    margin-right: 8px;
+}
 
 
 /***************************************************************************************/
