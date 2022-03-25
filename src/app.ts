@@ -12,6 +12,7 @@ import { ActionSettings } from "./actions/action_settings";
 import { ButtonSpacer } from "./button/buttonSpacer";
 import { PlaceHolderButton } from "./button/button_placeholder";
 import { GetScriptCallback, SetScriptCallback } from "./common";
+import { ButtonDropdown, ButtonDropdownElement } from "./button/button_dropdown";
 
 export class Application{
 
@@ -77,7 +78,7 @@ export class Application{
 
         new ButtonSpacer(this.top_container);
 
-        new Button(this.top_container, "img/settings.png", act_settings, "Settings");
+        new ButtonDropdown(this.top_container, "img/settings.png", [ new ButtonDropdownElement("Clear console", () => {this.serial_output.clear()}, "f120"), new ButtonDropdownElement("Force task stop", () => { this.dapLinkWrapper.sendKeyboardInterrupt(); }, "f54c") ], "Settings");
     }
 
     private onConnectionChange(is_connected: boolean){
