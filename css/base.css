@@ -1,0 +1,325 @@
+body{
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+
+    background-color: #39474e;
+    color: #BBB;
+
+    font-family: "Open Sans", "Helvetica Neue", Arial, Helvetica, sans-serif
+
+}
+
+.citation-error {
+    padding: 8px;
+    font-family: monospace;
+    margin-left: 16px;
+}
+
+/***************************************************************************************/
+/***                                   CONTAINERS                                    ***/
+/***************************************************************************************/
+
+#main_container{
+    position: relative;
+    width: 100%;
+    height: calc(100% - 4px);
+    overflow: hidden;
+}
+
+#top_container{
+    width: 100%;
+    height: 100px;
+}
+
+#left_container, #right_container {
+    box-sizing: border-box;
+    position: absolute;
+    width: calc( 50vw - 2px);
+    height: calc(100% - 100px);
+    overflow: auto;
+    top: 100px;
+}
+
+#left_container {
+    left: 0;
+    padding: 0 4px;
+}
+
+#right_container {
+    right: 0;
+    padding: 0 4px;
+}
+
+#spacer_container {
+    position: absolute;
+    width: 4px;
+    height: calc(100vh - 100px);
+
+    top:100px;
+    left: calc( 50vw - 2px);
+
+    cursor: ew-resize;
+    z-index: 100;
+}
+    #spacer_container div {  
+        padding: 0;
+        margin: 0;  
+        font-size: 2em;
+        position: absolute;
+        top: 50%;
+        left: -7.5px;
+        transform: translate(0, -50%);
+    }
+
+
+*.unselectable {
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    
+    /*
+        Introduced in IE 10.
+        See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+    */
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+
+/***************************************************************************************/
+/***                                    TOP MENU                                     ***/
+/***************************************************************************************/
+
+.menu_button {
+    width: calc( 100px - 8px);
+    height: calc( 100px - 8px);
+
+    display: inline-block;
+    margin: 0;
+    padding: 16px;
+    margin: 4px;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+.menu_button.disable {
+    pointer-events: none;
+}
+
+.menu_button img {
+    width: 100%;
+}
+
+.menu_button_space {
+    width: 25px;
+    display: inline-block;
+}
+
+.menu_button_dropdown {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+
+    border-radius: 5px;
+    padding: 4px;
+}
+
+.menu_button_dropdown p {
+    cursor: pointer;
+    margin: 8px;
+}
+
+.menu_button_dropdown p:hover {
+    text-underline-offset: 3px;
+    text-decoration: underline dashed;
+}
+
+.menu_button_dropdown p span{
+    margin-right: 8px;
+}
+
+
+/***************************************************************************************/
+/***                                     EDITOR                                      ***/
+/***************************************************************************************/
+
+#code_editor{
+    width: 100%;
+    height: 100%;
+}
+
+
+
+/***************************************************************************************/
+/***                                     SERIAL                                      ***/
+/***************************************************************************************/
+
+.serial_output{
+    width: 100%;
+    height: 100%;
+
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 5px;
+    border: 1px solid white;
+    box-sizing: border-box;
+    overflow: auto;
+    white-space: pre-wrap;
+
+    padding: 4px;
+}
+
+
+
+/***************************************************************************************/
+/***                               PROGRESS DIALOG                                   ***/
+/***************************************************************************************/
+
+.progress-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 100vw;
+    height: 100vh;
+}
+
+.progress-dialog-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 33%;
+    transform: translate(-50%, -50%);
+
+    padding: 0;
+
+    border-radius: 5px;
+    overflow-x: hidden;
+}
+
+.progress-dialog-title {
+    margin-top: 0;
+    padding: 4px 8px;
+    font-size: 1.5em;
+}
+
+.progress-dialog-content {
+    padding: 8px;
+}
+
+.progress-dialog-bar-container {
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1em;
+}
+
+.progress-dialog-bar-value {
+    float: left;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    margin: 0;
+}
+
+.progress-dialog-bar-cursor  {
+    width: 0%;
+    height: 100%;
+}
+
+.progress-dialog-close-button {
+    border-radius: 10px;
+    padding: 8px 32px;
+    border: none;
+    font-weight: bold;
+    margin-top: 8px;
+    cursor: pointer;
+    line-height: 1.5;
+    font-size: 100%;
+    margin-left: 100%;
+    transform: translateX(-100%);
+}
+
+.progress-dialog-infos {
+    padding-left: 16px;
+    font-size: 0.9em;
+}
+
+
+
+/***************************************************************************************/
+/***                                 ALERT DIALOG                                    ***/
+/***************************************************************************************/
+
+.alert-dialog {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+    width: 100vw;
+    height: 100vh;
+}
+
+.alert-dialog-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 33%;
+    transform: translate(-50%, -50%);
+
+    padding: 0;
+
+    border-radius: 5px;
+    overflow-x: hidden;
+}
+
+.alert-dialog-title {
+    margin-top: 0;
+    padding: 4px 8px;
+    font-size: 1.5em;
+}
+
+.alert-dialog-title.alert-dialog-icon-none::before {
+    font: var(--fa-font-solid);
+    content: "";
+    margin-right: 0px;
+}
+
+.alert-dialog-title.alert-dialog-icon-info::before {
+    font: var(--fa-font-solid);
+    content: "\f05a";
+    margin-right: 8px;
+}
+
+.alert-dialog-title.alert-dialog-icon-warning::before {
+    font: var(--fa-font-solid);
+    content: "\f071";
+    margin-right: 8px;
+}
+
+.alert-dialog-title.alert-dialog-icon-error::before {
+    font: var(--fa-font-solid);
+    content: "\f1e2";
+    margin-right: 8px;
+}
+
+.alert-dialog-content {
+    padding: 8px;
+}
+
+.alert-dialog-close-button {
+    border-radius: 10px;
+    padding: 8px 32px;
+    border: none;
+    font-weight: bold;
+    margin-top: 8px;
+    cursor: pointer;
+    line-height: 1.5;
+    font-size: 100%;
+    margin-left: 100%;
+    transform: translateX(-100%);
+}
