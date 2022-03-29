@@ -14,6 +14,7 @@ import { PlaceHolderButton } from "./button/button_placeholder";
 import { GetScriptCallback, SetScriptCallback } from "./common";
 import { ButtonDropdown, ButtonDropdownElement } from "./button/button_dropdown";
 import { AlertDialog, AlertDialogIcon } from "./alert_dialog";
+import { APP_VERSION } from "./version";
 
 export class Application{
 
@@ -79,7 +80,7 @@ export class Application{
 
         new ButtonSpacer(this.top_container);
 
-        new ButtonDropdown(this.top_container, "img/settings.png", [ new ButtonDropdownElement("Clear console", () => {this.serial_output.clear()}, "f120"), new ButtonDropdownElement("Force task stop", () => { this.dapLinkWrapper.sendKeyboardInterrupt(); }, "f54c") ], "Settings");
+        new ButtonDropdown(this.top_container, "img/settings.png", [ new ButtonDropdownElement("Clear console", () => {this.serial_output.clear()}, "f120"), new ButtonDropdownElement("Force task stop", () => { this.dapLinkWrapper.sendKeyboardInterrupt(); }, "f54c"), new ButtonDropdownElement("About", () => this.about(), "f059") ], "Settings");
     }
 
     private onConnectionChange(is_connected: boolean){
@@ -91,6 +92,10 @@ export class Application{
             this.button_run?.disable();
             this.button_conn?.setButtonState(true);
         }
+    }
+
+    private about(){
+        new AlertDialog("About", `Version: ${APP_VERSION}`, AlertDialogIcon.INFO).open();
     }
 }
 
