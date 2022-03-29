@@ -13,6 +13,7 @@ import { ButtonSpacer } from "./button/buttonSpacer";
 import { PlaceHolderButton } from "./button/button_placeholder";
 import { GetScriptCallback, SetScriptCallback } from "./common";
 import { ButtonDropdown, ButtonDropdownElement } from "./button/button_dropdown";
+import { AlertDialog, AlertDialogIcon } from "./alert_dialog";
 
 export class Application{
 
@@ -95,3 +96,7 @@ export class Application{
 
 // @ts-ignore
 window["Application"] = Application;
+// @ts-ignore
+window["AlertDialog"] = AlertDialog;
+// @ts-ignore
+window["AlertDialogIcon"] = AlertDialogIcon;
