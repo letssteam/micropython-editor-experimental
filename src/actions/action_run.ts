@@ -22,7 +22,7 @@ export class ActionRun implements Action{
         this.dialog.addInfo("Sending script to target");
 
         await this.daplink.runScript(   this.getScript_cb(), 
-                                        (prgs) => this.dialog.setProgressValue(prgs),
+                                        (prgs) => this.dialog.setProgressValue(prgs * 100),
                                         (err) => {
                                             this.dialog.addInfo(err, ProgressMessageType.ERROR);
                                             is_error = true;
