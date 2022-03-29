@@ -15,6 +15,7 @@
 
 
         <script src="js/app.js"></script>
+        <script src="js/custom_completion.js"></script>
 
         <script src="js/ace_1-4-14/ace.js" type="text/javascript" charset="utf-8"></script>
         <script src="js/ace_1-4-14/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -106,6 +107,8 @@
                 () => {return ace_editor.getValue()},
                 (str) => {ace_editor.setValue(str, 1)}
             );
+
+            var completion = new CustomCompletion(app, "/assets/completion.json");
 		</script>
 
     </body>
