@@ -1,4 +1,4 @@
-class CustomCompletion {
+class CustomLibCompletion {
     constructor(ace_editor, doc_file){
         this.ace_editor = ace_editor;
         this.doc = null;
