@@ -10,8 +10,25 @@ var glob = require("glob");
 
 var tsify = require("tsify");
 var browserify = require("browserify");
+var replace = require("gulp-replace");
+var spawnSync = require("child_process").spawnSync;
 
+// ====================================================
+// ===  UTIL FUNTIONS   ============================
+// ==============================================
 
+function is_argument_found( arg ){
+    return process.argv.indexOf(arg) != -1;
+}
+
+function git_last_sha(){
+    return spawnSync("git", ["--no-pager", "log", "-n1", "--format=format:%h_%cs"]).stdout.toString();
+}
+
+function git_current_branch(){
+    let branch = spawnSync("git", ["--no-pager", "branch", "--show-current", "--format=%(fieldname)"]).stdout.toString().replace(/[\r\n]*/g, "");
+    return (branch.length == 0) ? "DETACH" : branch;
+}
 
 // ====================================================
 // ===  CONFIGURATION   ============================
@@ -22,6 +39,7 @@ const ASSETS_PATH = `assets`
 const FAT_PATH = `${ASSETS_PATH}/fat`;
 
 
+const LAST_GIT_SHA = `${is_argument_found("--release") ? "" : "DEV__"}${git_current_branch()}_${git_last_sha()}`;
 
 // ====================================================
 // ===  GULP TASK   ================================
@@ -79,6 +97,7 @@ gulp.task("ts-compilation", function(){
         .plugin(tsify)
         .bundle()
         .pipe( source("app.js") )
+        .pipe( replace("%%APP_VERSION%%", LAST_GIT_SHA) )
         .pipe( gulp.dest(`${DIST_PATH}/js`, {overwrite: true}) );
 });
 
@@ -96,7 +115,7 @@ gulp.task("default",
 );
 
 // Start watch if arg '--watch' is present
-if( process.argv.indexOf("--watch") != -1 ){
+if( is_argument_found("--watch") ){
     console.log("\n\tWatching enabled\n");
 
     gulp.watch( "src/**", gulp.series("ts-compilation") );
