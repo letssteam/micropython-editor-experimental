@@ -102,7 +102,7 @@
 
             ace_editor.setValue('# Write your python code, here !\n\n# Define the hello function\ndef hello():\n\tprint(\'Hello World\')\n\n# Call the hello function\nhello()\n', 1);
 
-            new Application(
+            var app = new Application(
                 () => {return ace_editor.getValue()},
                 (str) => {ace_editor.setValue(str, 1)}
             );
