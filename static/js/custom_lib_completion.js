@@ -2,7 +2,6 @@ class CustomLibCompletion {
     constructor(ace_editor, doc_file){
         this.ace_editor = ace_editor;
         this.doc = null;
-        this.debug = false;
         this.load_file(doc_file);
     }
 
@@ -27,19 +26,11 @@ class CustomLibCompletion {
 
         var modulesList = Object.keys( this.doc );
 
-        this.debug_log("editor", editor);
-        this.debug_log("session", session);
-        this.debug_log("pos", pos);
-        this.debug_log("prefix", prefix);
-        this.debug_log("\n");
-
         let line = session.getLine(pos.row);
 
         if( line[ line.length - 2 ] == "." ){
             let beginWord = this.lastIndexOfRegex(line.slice(0, -2), "[^a-zA-Z0-9_]");
             let previousWord = line.slice( beginWord + 1, -2);
-
-            this.debug_log("Previous Word: " + previousWord)
 
             if( modulesList.includes(previousWord) ){
                 
@@ -84,10 +75,5 @@ class CustomLibCompletion {
         }
     
         return index;
-    }
-
-    debug_log(...args){
-        if(!this.debug){ return; }
-        console.log(...args);
     }
 }

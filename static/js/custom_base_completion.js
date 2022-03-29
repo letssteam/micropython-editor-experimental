@@ -1,7 +1,6 @@
 class CustomBaseCompletion {
     constructor(ace_editor){
         this.ace_editor = ace_editor;
-        this.debug = false;
 
         ace_editor.completers.push(this);
     }
@@ -10,19 +9,8 @@ class CustomBaseCompletion {
         
         let content = this.get_content( session, pos);
 
-        console.log(pos, session.getLine(pos.row));
-        console.log(content);
-
         let localWords = this.extract_words( content );
         localWords = localWords.filter( (value) => !session.$mode.$highlightRules.$keywordList.includes(value));
-
-        console.log("Words", localWords)
-
-        this.debug_log("editor", editor);
-        this.debug_log("session", session);
-        this.debug_log("pos", pos);
-        this.debug_log("prefix", prefix);
-        this.debug_log("\n");
 
         callback(null, localWords.map( function(word){
             return {
@@ -56,10 +44,5 @@ class CustomBaseCompletion {
                       .trim()                                           // Trim the result
                       .split(" ");                                      // Split the result
 
-    }
-
-    debug_log(...args){
-        if(!this.debug){ return; }
-        console.log(...args);
     }
 }
