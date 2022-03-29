@@ -15,7 +15,8 @@
 
 
         <script src="js/app.js"></script>
-        <script src="js/custom_completion.js"></script>
+        <script src="js/custom_lib_completion.js"></script>
+        <script src="js/custom_base_completion.js"></script>
 
         <script src="js/ace_1-4-14/ace.js" type="text/javascript" charset="utf-8"></script>
         <script src="js/ace_1-4-14/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
@@ -96,11 +97,12 @@
                 mode: 'ace/mode/python', // string: path to language mode 
             
                 //ext-language_tools.js
-                enableBasicAutocompletion: true,
                 enableLiveAutocompletion:   true,
+                enableBasicAutocompletion: true,
                 enableSnippets: false,
                 });
 
+            ace_editor.completers.splice(1, 1); // Remove "Local" completer
             ace_editor.setValue('# Write your python code, here !\n\n# Define the hello function\ndef hello():\n\tprint(\'Hello World\')\n\n# Call the hello function\nhello()\n', 1);
 
             var app = new Application(
@@ -108,7 +110,8 @@
                 (str) => {ace_editor.setValue(str, 1)}
             );
 
-            var completion = new CustomCompletion(app, "assets/completion.json");
+            var completion_lib = new CustomLibCompletion(ace_editor, "assets/completion.json");
+            var completion_base = new CustomBaseCompletion(ace_editor);
 		</script>
 
     </body>
