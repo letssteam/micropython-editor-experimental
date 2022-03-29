@@ -192,16 +192,18 @@ export class DapLinkWrapper {
             await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
             await wait(2000);
 
+            this.flushSerial();
+
             await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
+            await wait(250);
 
             for(let i = 0; i < chunks.length; ++i ){
                 await this.target?.serialWrite(chunks[i]);
-                await this.target?.serialRead();
+                await wait(10);
 
                 if(on_progress != undefined){
                     on_progress( i / chunks.length );
                 }
-
             }
 
             await this.target?.serialWrite( "try:\n");
@@ -209,7 +211,7 @@ export class DapLinkWrapper {
             await this.target?.serialWrite( "except KeyboardInterrupt:\n");
             await this.target?.serialWrite(     "\tprint(\"--INTERRUPT RUNNING PROGRAM--\")\n\n");
 
-            await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Start REPL on paste code (REPL Python)
+            await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D] Execute python code (REPL Python)
         }
         catch(e: any){
             console.warn("[SEND SCRIPT]: ", e);
