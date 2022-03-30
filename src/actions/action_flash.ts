@@ -93,10 +93,8 @@ export class ActionFlash implements Action {
             let files : FatFile[] = await this.readFileAsJSON("assets/fat.json"); //JSON.parse( await this.readFileAsText("assets/fat.json"))
             
             files.forEach( async (file) => {
-                console.log(file)
-
                 if(file.isBinary)
-                    fat.addBinaryFile(file.name, file.extension, new Uint8Array( await this.readFileAsBinary(file.path)) )
+                    fat.addBinaryFile(file.name, file.extension, await this.readFileAsBinary(file.path) )
                 else
                     fat.addFile(file.name, file.extension, await this.readFileAsText(file.path))
             });
@@ -123,17 +121,25 @@ export class ActionFlash implements Action {
     }
 
     private async readFileAsJSON(file: string) : Promise<any> {
-        let rep = await fetch(file);
+        let rep = await this.fetchNoCache(file);
         return rep.json();
     }
 
     private async readFileAsText(file: string) : Promise<string> {
-        let rep = await fetch(file);
+        let rep = await this.fetchNoCache(file);
         return rep.text();
     }
 
-    private async readFileAsBinary(file: string) : Promise<ArrayBuffer> {
-        let rep = await fetch(file);
-        return rep.arrayBuffer();
+    private async readFileAsBinary(file: string) : Promise<Uint8Array> {
+        let rep = await this.fetchNoCache(file);
+        return new Uint8Array( await rep.arrayBuffer());
+    }
+
+    private fetchNoCache(file: string, method: string = "GET") : Promise<Response>{
+        var myHeaders = new Headers();
+        myHeaders.append('pragma', 'no-cache');
+        myHeaders.append('cache-control', 'no-cache');
+
+        return fetch(file, { method: method, headers: myHeaders });
     }
 }
