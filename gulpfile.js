@@ -56,7 +56,9 @@ gulp.task('clean', function(){
  * Copy all static files/folders to DIST_PATH folder
  */
 gulp.task("copy-static", function(){
-    return gulp.src("static/**").pipe(gulp.dest(DIST_PATH, {overwrite: true}));
+    return gulp.src("static/**")
+               .pipe( replace("%%APP_VERSION%%", LAST_GIT_SHA) )
+               .pipe(gulp.dest(DIST_PATH, {overwrite: true}));
 });
 
 /**
