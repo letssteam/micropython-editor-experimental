@@ -7,7 +7,11 @@ class CustomLibCompletion {
 
     async load_file(filename){
         try{
-            let resp = await fetch( filename );
+            var myHeaders = new Headers();
+            myHeaders.append('pragma', 'no-cache');
+            myHeaders.append('cache-control', 'no-cache');
+
+            let resp = await fetch( filename, { method: "GET", headers: myHeaders } );
             this.doc = await resp.json();
 
             ace_editor.completers.push(this);
