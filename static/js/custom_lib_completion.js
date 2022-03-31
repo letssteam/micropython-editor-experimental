@@ -3,6 +3,7 @@ class CustomLibCompletion {
         this.ace_editor = ace_editor;
         this.doc = null;
         this.load_file(doc_file);
+        ace_editor.completers.push(this);
     }
 
     async load_file(filename){
@@ -13,8 +14,6 @@ class CustomLibCompletion {
 
             let resp = await fetch( filename, { method: "GET", headers: myHeaders } );
             this.doc = await resp.json();
-
-            ace_editor.completers.push(this);
             
             console.log("Completion file is loaded !");
         }
@@ -29,12 +28,14 @@ class CustomLibCompletion {
         if( this.doc == null ){ return; }
 
         var modulesList = Object.keys( this.doc );
+        var varsAffectations = this.getVarsAffectations(editor.getValue())
 
         let line = session.getLine(pos.row);
 
-        if( line[ line.length - 2 ] == "." ){
-            let beginWord = this.lastIndexOfRegex(line.slice(0, -2), "[^a-zA-Z0-9_]");
-            let previousWord = line.slice( beginWord + 1, -2);
+        if( line.slice(-2).includes(".") ){
+            let point_pos = line.lastIndexOf(".");
+            let beginWord = this.lastIndexOfRegex(line.slice(0, point_pos), "[^a-zA-Z0-9_]");
+            let previousWord = line.slice( beginWord + 1, point_pos);
 
             if( modulesList.includes(previousWord) ){
                 
@@ -43,7 +44,9 @@ class CustomLibCompletion {
                     return {
                         caption: word,
                         value: word,
-                        meta: "from " + previousWord
+                        meta: "from " + previousWord,
+                        score: 20,
+                        icon: "package"
                     }
                 } ));
 
@@ -52,9 +55,32 @@ class CustomLibCompletion {
                     return {
                         caption: word,
                         value: word,
-                        meta: "from " + previousWord
+                        meta: "from " + previousWord,
+                        score: 20,
+                        icon: "property"
                     }
                 } ));
+            }
+            else if( Object.keys(varsAffectations).includes(previousWord) ){
+                let var_module = varsAffectations[previousWord][0];
+                let var_class = varsAffectations[previousWord][1];
+
+                if( modulesList.includes( var_module ) ){
+                    
+                    let classes = Object.keys(this.doc[var_module].classes)
+                    if( classes.includes(var_class) ){
+
+                        callback(null, this.doc[var_module].classes[var_class].map( (word_fct) => {
+                            return {
+                                caption: `${word_fct.name}(${this.format_function_parameters(word_fct.args, word_fct.defaults)})`,
+                                value: word_fct.name,
+                                meta: `${var_class}`,
+                                score: 100,
+                                icon: "method"
+                            }
+                        } ));
+                    }
+                }
             }
         }
         else{
@@ -62,11 +88,33 @@ class CustomLibCompletion {
                 return {
                     caption: word,
                     value: word,
-                    meta: "module"
+                    meta: "module",
+                    icon: "package"
                 };
             }));
         }
 
+    }
+
+    getVarsAffectations(content){
+        let result = {};
+
+        for( let match of content.matchAll( /^[\t ]*(?<var>\w+)[\t ]*=[\t ]*(?<content>\w[\w\.]*)[\w.\(\)]*$/gm ) ){
+            //console.log(`VAR(${match.groups.var}) ==> CONTENT(${match.groups.content}))`);
+            result[match.groups.var] = match.groups.content.split(".");
+        }
+
+        return result;
+    }
+
+    format_function_parameters(args, defaults){
+        let final = args.slice()
+
+        defaults.forEach( (value, index) => {
+            final[ final.length - index ] += `=${value}`; 
+        });
+
+        return final.join(", ");
     }
 
     lastIndexOfRegex(str, toFind){

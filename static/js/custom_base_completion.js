@@ -16,7 +16,8 @@ class CustomBaseCompletion {
             return {
                 caption: word,
                 value: word,
-                meta: "local"
+                meta: "local",
+                score: 10
             };
         }));
     }
@@ -32,17 +33,19 @@ class CustomBaseCompletion {
 
     extract_words(content){
 
-        return content.replace(/[a-zA-Z0-9_]+\.[\.a-zA-Z0-9_]+/gm, "")  // Remove 'dot' linked element (object.member)
-                      .replace(/#[\S ]*\n/g, "")                        // Remve comments
-                      .replace(/\n[ ]*\n/g, "\n")                       // Remove empty line
-                      .replace(/\([\S \t]*\)[\s]*:/gm, "")              // Remove parenthesis (and content) on class/function declaration (keep only the name)
-                      .replace(/[\S]*\([\S \t]*\)/gm, "")               // Remove function call
-                      .replace(/(?<=[<!=> ]+)\d+/gm, "")                // Remove numeric literals
-                      .replace(/[\r\t:=><!\+\-*\/\%;]*/gm, "")          // Remove special chars
-                      .replace(/\n/g, " ")                              // Replace newline whit space (for further processing)
-                      .replace(/[ ]{2,}/gm, " ")                        // Remove extra space
-                      .trim()                                           // Trim the result
-                      .split(" ");                                      // Split the result
+        return content.replace(/^[ \t]*import[ \t]*\w*[ \t]*$/gm, "")                       // Remove import lines ("import os")
+                      .replace(/^[ \t]*from[ \t]*\w*[ \t]*import[ \t]*\w*[ \t]*$/gm, "")    // Remove from - import lines ("from machine import Pin")
+                      .replace(/[a-zA-Z0-9_]+\.[\.a-zA-Z0-9_]+/gm, "")                      // Remove 'dot' linked element (object.member)
+                      .replace(/#[\S ]*\n/g, "")                                            // Remve comments
+                      .replace(/\n[ ]*\n/g, "\n")                                           // Remove empty line
+                      .replace(/\([\S \t]*\)[\s]*:/gm, "")                                  // Remove parenthesis (and content) on class/function declaration (keep only the name)
+                      .replace(/[\S]*\([\S \t]*\)/gm, "")                                   // Remove function call
+                      .replace(/(?<=[<!=> ]+)\d+/gm, "")                                    // Remove numeric literals
+                      .replace(/[\r\t:=><!\+\-*\/\%;]*/gm, "")                              // Remove special chars
+                      .replace(/\n/g, " ")                                                  // Replace newline whit space (for further processing)
+                      .replace(/[ ]{2,}/gm, " ")                                            // Remove extra space
+                      .trim()                                                               // Trim the result
+                      .split(" ");                                                          // Split the result
 
     }
 }
