@@ -3,48 +3,48 @@
 		"name": "BOOT",
 		"extension": "PY",
 		"isBinary": false,
-		"path": "/assets/fat/BOOT.PY"
+		"path": "./assets/fat/BOOT.PY"
 	},
 	{
 		"name": "I2C_LCD",
 		"extension": "MPY",
 		"isBinary": true,
-		"path": "/assets/fat/i2c_lcd.mpy"
+		"path": "./assets/fat/i2c_lcd.mpy"
 	},
 	{
 		"name": "LIS3MDL",
 		"extension": "MPY",
 		"isBinary": true,
-		"path": "/assets/fat/lis3mdl.mpy"
+		"path": "./assets/fat/lis3mdl.mpy"
 	},
 	{
 		"name": "LPS22",
 		"extension": "MPY",
 		"isBinary": true,
-		"path": "/assets/fat/lps22.mpy"
+		"path": "./assets/fat/lps22.mpy"
 	},
 	{
 		"name": "PYBCDC",
 		"extension": "INF",
 		"isBinary": false,
-		"path": "/assets/fat/PYBCDC.INF"
+		"path": "./assets/fat/PYBCDC.INF"
 	},
 	{
 		"name": "README",
 		"extension": "TXT",
 		"isBinary": false,
-		"path": "/assets/fat/README.TXT"
+		"path": "./assets/fat/README.TXT"
 	},
 	{
 		"name": "SSD1306",
 		"extension": "MPY",
 		"isBinary": true,
-		"path": "/assets/fat/ssd1306.mpy"
+		"path": "./assets/fat/ssd1306.mpy"
 	},
 	{
 		"name": "VL53L0X",
 		"extension": "MPY",
 		"isBinary": true,
-		"path": "/assets/fat/vl53l0x.mpy"
+		"path": "./assets/fat/vl53l0x.mpy"
 	}
 ]
