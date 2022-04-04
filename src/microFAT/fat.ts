@@ -52,9 +52,9 @@ export class FatFS {
         this.root.addFile(filename, extension, FileAttribute.ARCHIVE, content);
     }
 
-    generate_binary(){
+    async generate_binary(){
         return          this.BPB.generateBPB()
                 .concat(this.table.generateTable())
-                .concat(this.root.generateRootDirectory());
+                .concat(await this.root.generateRootDirectory());
     }
 }

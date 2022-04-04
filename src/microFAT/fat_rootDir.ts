@@ -1,3 +1,4 @@
+import { wait } from "../common";
 import { FatBPB } from "./fat_BPB";
 import { FatUtils } from "./fat_common";
 import { FatTable } from "./fat_table";
@@ -127,7 +128,9 @@ export class FatRootDirectory{
 
             cluster = next_cluster;
 
-            if( cluster > this.biggest_cluster_use ) this.biggest_cluster_use = cluster;
+            if( cluster > this.biggest_cluster_use ){
+                this.biggest_cluster_use = cluster;
+            }
 
             this.sectors[ cluster - 2 ].set( content.slice( i * this.sector_size, i * this.sector_size + this.sector_size ) );
 
@@ -139,10 +142,9 @@ export class FatRootDirectory{
         this.fat_table.set_next_cluster(cluster, FatTable.END_OF_FILE);
         
         this.files[this.getAvailableFileIndex()] = file;
-
     }
 
-    generateRootDirectory() : number[]{
+    async generateRootDirectory() : Promise<number[]>{
         let result: number[] = [];
 
 
@@ -156,8 +158,11 @@ export class FatRootDirectory{
         });
 
         for(let i = 0; i < this.sectors.length && i < this.biggest_cluster_use; ++i ){
-
             result = result.concat( Array.from(this.sectors[i].data) );
+
+            //DO NOT REMOVE THIS DELAY ! RISK OF APOCALYPSE !
+            //The next line avoid a HeisenBug... Please be careful.
+            await wait(5);  
         }
 
         return result;

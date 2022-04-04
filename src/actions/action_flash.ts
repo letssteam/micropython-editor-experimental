@@ -109,7 +109,7 @@ export class ActionFlash implements Action {
 
         fat.addFile("MAIN", "PY", this.get_script_cb());
 
-        let fat_part = fat.generate_binary();
+        let fat_part = await fat.generate_binary();
 
         let bin_file = new Uint8Array( base.byteLength + fat_part.length);
         bin_file.set(new Uint8Array(base), 0);
