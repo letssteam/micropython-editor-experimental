@@ -5,6 +5,7 @@ import { OnConnectionChangeCallback, OnErrorCallback, OnProgressCallback, wait }
 export class DapLinkWrapper {
 
     static readonly LENGTH_SERIAL_BUFFER : number = 30;
+    static readonly SERIAL_DELAY_MS : number = 10;
 
     private is_webusb_available: boolean;
     private device?: USBDevice = undefined;
@@ -48,7 +49,7 @@ export class DapLinkWrapper {
         }
 
         await this.target?.serialWrite(String.fromCharCode(1)); // [Ctrl+A] enter raw mode (REPL Python)
-        this.target?.startSerialRead();
+        this.target?.startSerialRead(DapLinkWrapper.SERIAL_DELAY_MS, true);
         this.callOnConnectionChangeCallbacks(true);
         return true;
     }
@@ -142,13 +143,18 @@ export class DapLinkWrapper {
         if( !this.isConnected() ){ return; }
 
         try{
+            this.target?.stopSerialRead();
             await this.target?.serialWrite(String.fromCharCode(3)); // [Ctrl+C]
             await wait(2000);
             await this.target?.serialWrite(String.fromCharCode(4)); // [Ctrl+D]
+            let read : string = "";
 
-            let read : string =  new TextDecoder().decode( await this.target?.serialRead() );
-            await wait(2000);
+            for( let i = 0; i < 10; i++ ){
+                read += new TextDecoder().decode( await this.target?.serialRead() );
+                await wait(100);
+            }
             
+            this.target?.startSerialRead(DapLinkWrapper.SERIAL_DELAY_MS, true);
             return (read.indexOf("MPY") != -1);
         }
         catch(e: any){
