@@ -45,7 +45,7 @@ export class FatTable {
         /*
             two 12 bits numbers : 0xABC and 0xXYZ
             concatenat in 24 bits number: 0xABCXYZ
-            should be stored like this : BC ZA XY
+            should be stored like this (LSB first) : BC ZA XY
         */
 
         let result: number[] = [];
