@@ -1,8 +1,9 @@
 class CustomLibCompletion {
-    constructor(ace_editor, doc_file){
+    constructor(ace_editor, doc_base_file, doc_lib_file){
         this.ace_editor = ace_editor;
-        this.doc = null;
-        this.load_file(doc_file);
+        this.doc = {};
+        this.load_file(doc_base_file);
+        //this.load_file(doc_lib_file);
         ace_editor.completers.push(this);
     }
 
@@ -13,14 +14,17 @@ class CustomLibCompletion {
             myHeaders.append('cache-control', 'no-cache');
 
             let resp = await fetch( filename, { method: "GET", headers: myHeaders } );
-            this.doc = await resp.json();
+            let doc = await resp.json();
+
+            Object.keys(doc).forEach( key => {
+                this.doc[key] = doc[key];
+            });
             
             console.log("Completion file is loaded !");
         }
         catch(e){
             console.error(e);
             new AlertDialog("Custom Completion error", `An error occured during loading completion file: <br/><div class="citation-error">${e.message}</div><br/>The user experience can be degraded. Try to restart your browser.`, AlertDialogIcon.ERROR).open();
-            this.doc = null;
         }
     }
 
@@ -50,8 +54,19 @@ class CustomLibCompletion {
                     }
                 } ));
 
-                let variables = this.doc[previousWord].variables
-                callback(null, variables.map( (word) => {
+                let functions = this.doc[previousWord].functions
+                callback(null, functions.map( (fct) => {
+                    return {
+                        caption: fct.name,
+                        value: fct.name,
+                        meta: "from " + previousWord,
+                        score: 20,
+                        icon: "method"
+                    }
+                } ));
+
+                let others = this.doc[previousWord].others
+                callback(null, others.map( (word) => {
                     return {
                         caption: word,
                         value: word,
