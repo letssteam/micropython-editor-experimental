@@ -45,7 +45,7 @@ const FAT_PATH = `${ASSETS_PATH}/fat`;
 
 
 const IS_RELEASE = is_argument_found("--release");
-const LAST_GIT_SHA = `${IS_RELEASE ? "REAL__" : "DEV__"}${git_current_branch()}_${git_last_sha()}`;
+const LAST_GIT_SHA = `${IS_RELEASE ? "REL__" : "DEV__"}${git_current_branch()}_${git_last_sha()}`;
 
 
 const APP_VERSION_TAG = "%%APP_VERSION%%";
