@@ -1,4 +1,4 @@
-# :construction: Let's STEAM - [MicroPython](https://micropython.org/) Editor (experimentation) :construction:
+# :construction: Let's STEAM - [MicroPython](https://micropython.org/) Editor (experimental) :construction:
 
 This is a simple experimentation to use MicroPython on the STM32L475 board (and STM32WB55 later ?).
 
@@ -13,13 +13,17 @@ Link to test : [https://letssteam.github.io/micropython-editor-experimental/](ht
 - Node.JS (>= 12.x)
 - NPM (>= 7.5.2)
 
+### Options
+ - `--watch`: recompile after editing a file (static file or Typescript file)
+ - `--release`: Minify files for production
+
 ### Developping / Deploying / Testing :
     
 1. Clone this repository `git clone https://github.com/letssteam/micropython-experiments.git`
 2. Run `npm install`
 3. Run `gulp` to compile and produce the static website in `dist` folder  
-**BONUS** You can use `gulp --watch` to recompile after editing a file (static file or Typescript file) !
-4. Run a simple HTTP server on `dist` folder (exemple: `python3 -m http.server`)
+**Pro tip** Use `gulp --watch` to recompile after editing a file !
+1. Run a simple HTTP server on `dist` folder (exemple: `python3 -m http.server`)
 
 ## Flash with `.hex` file :vs: Flash with the editor (WebUSB)
 **Only if MicroPython is already flash on the target**
@@ -37,4 +41,4 @@ All the vulnerabilities found by `npm audit` are for **dev** dependencies, only.
 
 
 ## One last thing
-THIS IS AN _EXPERIMENTATION_, please be kind :heart:
+THIS IS _EXPERIMENTAL_, please be kind :heart:

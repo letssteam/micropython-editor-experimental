@@ -5,8 +5,13 @@
 var gulp = require("gulp");
 var del = require("del");
 var source = require("vinyl-source-stream");
+var buffer = require("vinyl-buffer");
 var fs = require("fs");
 var glob = require("glob");
+
+var js_minify = require("gulp-minify");
+var clean_css = require("gulp-clean-css");
+var add_src = require("gulp-add-src");
 
 var tsify = require("tsify");
 var browserify = require("browserify");
@@ -39,8 +44,11 @@ const ASSETS_PATH = `assets`
 const FAT_PATH = `${ASSETS_PATH}/fat`;
 
 
-const LAST_GIT_SHA = `${is_argument_found("--release") ? "" : "DEV__"}${git_current_branch()}_${git_last_sha()}`;
+const IS_RELEASE = is_argument_found("--release");
+const LAST_GIT_SHA = `${IS_RELEASE ? "REAL__" : "DEV__"}${git_current_branch()}_${git_last_sha()}`;
 
+
+const APP_VERSION_TAG = "%%APP_VERSION%%";
 // ====================================================
 // ===  GULP TASK   ================================
 // ==============================================
@@ -53,12 +61,55 @@ gulp.task('clean', function(){
 });
 
 /**
+ * Processing CSS files
+ */
+gulp.task("static-css-files", function(){
+    let g = gulp.src("static/css/*.css");
+
+    if( IS_RELEASE ){
+        g = g.pipe( clean_css() );
+    }
+
+    return g.pipe( add_src("static/css/*/**") )
+            .pipe( gulp.dest(DIST_PATH + "/css", {overwrite: true}));
+})
+
+/**
+ * Processing JS files
+ */
+gulp.task("static-js-files", function(){
+    let g = gulp.src("static/js/*.js")
+                .pipe( replace(APP_VERSION_TAG, LAST_GIT_SHA) );
+
+    if( IS_RELEASE ){
+            g = g.pipe( js_minify({
+                noSource: true,
+                ext:{ min: ".js" }
+            }));
+    }
+
+    return g.pipe( add_src("static/js/*/**"))
+            .pipe( gulp.dest(DIST_PATH + "/js", {overwrite: true}))
+})
+
+/**
+ * Processing all pther static files
+ */
+gulp.task("static-files", function(){
+    return gulp.src( "static/**", {ignore: ["static/css/**", "static/js/**"]} )
+               .pipe( replace(APP_VERSION_TAG, LAST_GIT_SHA) )
+               .pipe( gulp.dest(DIST_PATH, {overwrite: true}) );
+})
+
+/**
  * Copy all static files/folders to DIST_PATH folder
  */
-gulp.task("copy-static", function(){
-    return gulp.src("static/**")
-               .pipe( replace("%%APP_VERSION%%", LAST_GIT_SHA) )
-               .pipe(gulp.dest(DIST_PATH, {overwrite: true}));
+gulp.task("copy-static", function(...args){
+    gulp.parallel(
+        "static-files",
+        "static-css-files",
+        "static-js-files"
+    )(...args);
 });
 
 /**
@@ -80,7 +131,7 @@ gulp.task("generate_json_fat", async function(cb){
                     })
     });
 
-    fs.writeFileSync(`${DIST_PATH}/${ASSETS_PATH}/fat.json`, JSON.stringify(result, null, "\t"));
+    fs.writeFileSync(`${DIST_PATH}/${ASSETS_PATH}/fat.json`, JSON.stringify(result, null, IS_RELEASE ? "" : "\t"));
 
     cb();
 });
@@ -89,18 +140,27 @@ gulp.task("generate_json_fat", async function(cb){
  * Compile Typescript files
  */
 gulp.task("ts-compilation", function(){
-    return browserify({
+    var b = browserify({
             basedir: ".",
-            debug: true,
+            debug: !IS_RELEASE,
             entries: "src/app.ts",
             cache: {},
-            packageCache: {}
+            packageCache: {},
         })
         .plugin(tsify)
         .bundle()
         .pipe( source("app.js") )
-        .pipe( replace("%%APP_VERSION%%", LAST_GIT_SHA) )
-        .pipe( gulp.dest(`${DIST_PATH}/js`, {overwrite: true}) );
+        .pipe( replace("%%APP_VERSION%%", LAST_GIT_SHA) );
+
+    if( IS_RELEASE ){
+        b = b.pipe( buffer() )
+             .pipe( js_minify({
+                noSource: true,
+                ext:{ min: ".js" }
+             }));
+    }
+
+    return b.pipe( gulp.dest(`${DIST_PATH}/js`, {overwrite: true}) );
 });
 
 /**
