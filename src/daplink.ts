@@ -1,4 +1,5 @@
 import * as DAPjs from "dapjs";
+import { DAPLink } from "dapjs";
 import { AlertDialog, AlertDialogIcon } from "./alert_dialog";
 import { OnConnectionChangeCallback, OnErrorCallback, OnProgressCallback, wait } from "./common";
 
@@ -10,7 +11,8 @@ export class DapLinkWrapper {
     private is_webusb_available: boolean;
     private device?: USBDevice = undefined;
     private transport? : DAPjs.WebUSB = undefined;
-    private target? : DAPjs.DAPLink = undefined;
+    public target? : DAPjs.DAPLink = undefined;
+    public  cortex?: DAPjs.CortexM = undefined;
 
     private cb_onReceiveData : Array<(data: string) => void> = [];
     private serial_buffer : string = "";
@@ -69,6 +71,7 @@ export class DapLinkWrapper {
         this.target = undefined;
         this.transport = undefined;
         this.device = undefined;
+        this.cortex = undefined;
 
         this.flushSerial();
         this.callOnConnectionChangeCallbacks(false);
@@ -244,12 +247,14 @@ export class DapLinkWrapper {
 
         this.transport = new DAPjs.WebUSB(this.device);
         this.target = new DAPjs.DAPLink(this.transport);
+        this.cortex = new DAPjs.CortexM(this.transport);
         
         this.target.on(DAPjs.DAPLink.EVENT_SERIAL_DATA, data => this.onEventSerialData(data) );
 
         try{
             await this.target.connect();
             await this.target.setSerialBaudrate(115200);
+            await this.cortex.connect();
         }
         catch(e: any){
             console.warn(e);
